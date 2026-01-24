@@ -4,10 +4,16 @@ const nextConfig = {
   images: {
     domains: [],
     remotePatterns: [],
+    unoptimized: false,
   },
   experimental: {
     mdxRs: false,
   },
+  // Enable static exports if needed
+  // output: 'export',
+  // For Vercel deployment
+  poweredByHeader: false,
+  compress: true,
 }
 
 module.exports = nextConfig

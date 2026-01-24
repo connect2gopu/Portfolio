@@ -1,34 +1,64 @@
-# Portfolio + Blog Website
+# Portfolio Website
 
 A modern portfolio website with integrated blog functionality built with Next.js, Tina CMS, and deployed on Vercel.
 
-## 🚀 Getting Started
+## 🚀 Features
+
+- **Portfolio Showcase**: Display your projects with filtering and search
+- **Blog**: Full-featured blog with categories, tags, and search
+- **About Page**: Experience timeline, skills, and social links
+- **Contact Form**: Functional contact form with validation
+- **Dark/Light Mode**: Toggle between themes
+- **Responsive Design**: Works on all devices
+- **SEO Optimized**: Full meta tags and Open Graph support
+- **RSS Feed**: Blog RSS feed at `/api/rss`
+- **Tina CMS**: Content management for projects and blog posts
+
+## 🛠️ Tech Stack
+
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Tina CMS** - Headless CMS
+- **MDX** - Content format
+- **Vercel Analytics** - Analytics
+- **Vercel** - Hosting
+
+## 📦 Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ 
 - npm or yarn
+- Git
 
 ### Installation
 
-1. Install dependencies:
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/connect2gopu.git
+cd connect2gopu
+```
+
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Set up environment variables:
-Create a `.env.local` file in the root directory:
+3. Set up environment variables:
+Create a `.env.local` file:
 ```env
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_TINA_CLIENT_ID=your_tina_client_id
 TINA_TOKEN=your_tina_token
 ```
 
-3. Run the development server:
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Tina CMS Admin
 
@@ -41,22 +71,42 @@ Then navigate to [http://localhost:3000/admin](http://localhost:3000/admin)
 
 ## 📁 Project Structure
 
-- `app/` - Next.js App Router pages and layouts
-- `components/` - React components
-- `content/` - MDX content files (projects, blog posts)
-- `.tina/` - Tina CMS configuration
-- `lib/` - Utility functions
-- `types/` - TypeScript type definitions
-- `public/` - Static assets
+```
+connect2gopu/
+├── app/                    # Next.js App Router
+│   ├── (main)/            # Main routes
+│   ├── api/               # API routes
+│   └── admin/             # Tina CMS admin
+├── components/             # React components
+│   ├── about/             # About page components
+│   ├── blog/              # Blog components
+│   ├── forms/             # Form components
+│   ├── home/              # Home page components
+│   ├── layout/             # Layout components
+│   ├── portfolio/         # Project components
+│   └── ui/                # UI components
+├── content/               # MDX content files
+│   ├── blog/              # Blog posts
+│   └── projects/          # Projects
+├── lib/                   # Utility functions
+├── public/                # Static assets
+└── types/                 # TypeScript types
+```
 
-## 🛠️ Tech Stack
+## 🚢 Deployment
 
-- **Next.js 14** - React framework
-- **Tina CMS** - Headless CMS
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **MDX** - Content format
-- **Vercel Analytics** - Analytics
+### Deploy to Vercel
+
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy!
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+### Connect GoDaddy Domain
+
+See [DOMAIN_SETUP.md](./DOMAIN_SETUP.md) for GoDaddy DNS configuration.
 
 ## 📝 Scripts
 
@@ -66,10 +116,33 @@ Then navigate to [http://localhost:3000/admin](http://localhost:3000/admin)
 - `npm run lint` - Run ESLint
 - `npm run dev:tina` - Start with Tina CMS
 
-## 🚢 Deployment
+## 🎨 Customization
 
-The project is configured for deployment on Vercel. Simply connect your GitHub repository to Vercel and deploy.
+### Colors
+
+Edit `app/globals.css` to change the color scheme.
+
+### Content
+
+- Projects: Add MDX files in `content/projects/`
+- Blog Posts: Add MDX files in `content/blog/`
+- Or use Tina CMS at `/admin`
+
+### Skills
+
+Edit `components/home/SkillsShowcase.tsx` to update skills.
+
+### Experience
+
+Edit `components/about/ExperienceTimeline.tsx` to update work experience.
 
 ## 📄 License
 
 MIT
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Content managed with [Tina CMS](https://tina.io/)
+- Deployed on [Vercel](https://vercel.com/)
