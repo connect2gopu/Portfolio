@@ -6,6 +6,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { generateSEO } from "@/lib/seo";
+import { Metadata } from "next";
 
 interface ProjectPageProps {
   params: {
@@ -18,6 +20,23 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({
     slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: ProjectPageProps): Promise<Metadata> {
+  const project = getProjectBySlug(params.slug);
+  if (!project) {
+    return {};
+  }
+
+  return generateSEO({
+    title: `${project.title} | Projects`,
+    description: project.description,
+    url: `/projects/${project.slug}`,
+    type: "article",
+    image: project.featuredImage,
+  });
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {

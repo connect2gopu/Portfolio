@@ -8,6 +8,8 @@ import Link from "next/link";
 import { SocialShare } from "@/components/blog/SocialShare";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { BlogCard } from "@/components/blog/BlogCard";
+import { generateSEO } from "@/lib/seo";
+import { Metadata } from "next";
 
 interface BlogPostPageProps {
   params: {
@@ -20,6 +22,26 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({
     slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: BlogPostPageProps): Promise<Metadata> {
+  const post = getBlogPostBySlug(params.slug);
+  if (!post) {
+    return {};
+  }
+
+  return generateSEO({
+    title: `${post.title} | Blog`,
+    description: post.description,
+    url: `/blog/${post.slug}`,
+    type: "article",
+    image: post.featuredImage,
+    publishedTime: post.publishedDate,
+    author: post.author,
+    tags: post.tags,
+  });
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {

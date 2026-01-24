@@ -2,7 +2,15 @@ import { ExperienceTimeline } from "@/components/about/ExperienceTimeline";
 import { AboutSkills } from "@/components/about/AboutSkills";
 import { ResumeDownload } from "@/components/about/ResumeDownload";
 import { SocialLinks } from "@/components/about/SocialLinks";
+import { generateSEO } from "@/lib/seo";
+import { Metadata } from "next";
 import Image from "next/image";
+
+export const metadata: Metadata = generateSEO({
+  title: "About | Portfolio",
+  description: "Learn more about my experience, skills, and background as a software developer.",
+  url: "/about",
+});
 
 export default function AboutPage() {
   return (

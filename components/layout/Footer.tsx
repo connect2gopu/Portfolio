@@ -99,9 +99,21 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {currentYear} All rights reserved.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Built with Next.js, Tina CMS & Vercel
-          </p>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <a
+              href="/api/rss"
+              className="hover:text-primary transition-colors flex items-center gap-1"
+              aria-label="RSS Feed"
+            >
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.503 20.752c0 1.794-1.456 3.248-3.251 3.248-1.796 0-3.252-1.454-3.252-3.248 0-1.794 1.456-3.248 3.252-3.248 1.795.001 3.251 1.454 3.251 3.248zm-6.503-12.572v4.811c6.05.062 10.96 4.966 11.022 11.009h4.817c-.062-8.937-7.32-16.196-16.24-16.24zm0-3.368c10.58.046 19.152 8.594 19.183 19.188h4.817c-.03-13.231-10.755-23.954-24-24v4.812z" />
+              </svg>
+              RSS Feed
+            </a>
+            <p className="text-sm text-muted-foreground">
+              Built with Next.js, Tina CMS & Vercel
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -1,6 +1,14 @@
 import { BlogGrid } from "@/components/blog/BlogGrid";
 import { getAllBlogPosts, getFeaturedBlogPosts } from "@/lib/blog";
 import { BlogCard } from "@/components/blog/BlogCard";
+import { generateSEO } from "@/lib/seo";
+import { Metadata } from "next";
+
+export const metadata: Metadata = generateSEO({
+  title: "Blog | Portfolio",
+  description: "Thoughts, tutorials, and insights on web development, programming, and technology.",
+  url: "/blog",
+});
 
 export default function BlogPage() {
   const allPosts = getAllBlogPosts();

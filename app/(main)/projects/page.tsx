@@ -1,5 +1,13 @@
 import { ProjectGrid } from "@/components/portfolio/ProjectGrid";
 import { getAllProjects } from "@/lib/projects";
+import { generateSEO } from "@/lib/seo";
+import { Metadata } from "next";
+
+export const metadata: Metadata = generateSEO({
+  title: "Projects | Portfolio",
+  description: "A collection of my recent work, including web applications, open-source projects, and side projects.",
+  url: "/projects",
+});
 
 export default function ProjectsPage() {
   const projects = getAllProjects();

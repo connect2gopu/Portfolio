@@ -3,16 +3,14 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Analytics } from "@vercel/analytics/react";
+import { generateSEO } from "@/lib/seo";
 
 const inter = Inter({ 
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = {
-  title: "Portfolio | Your Name",
-  description: "Software developer, technical writer & open-source maintainer",
-};
+export const metadata: Metadata = generateSEO();
 
 export default function RootLayout({
   children,
