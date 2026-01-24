@@ -1,12 +1,20 @@
+import { Hero } from "@/components/home/Hero";
+import { FeaturedProjects } from "@/components/home/FeaturedProjects";
+import { LatestBlogPosts } from "@/components/home/LatestBlogPosts";
+import { SkillsShowcase } from "@/components/home/SkillsShowcase";
+import { getFeaturedProjects } from "@/lib/projects";
+import { getLatestBlogPosts } from "@/lib/blog";
+
 export default function Home() {
+  const featuredProjects = getFeaturedProjects(3);
+  const latestPosts = getLatestBlogPosts(3);
+
   return (
-    <main className="min-h-screen">
-      <div className="container mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-4">Welcome to My Portfolio</h1>
-        <p className="text-lg text-muted-foreground">
-          This is the home page. Content will be added soon.
-        </p>
-      </div>
-    </main>
+    <>
+      <Hero />
+      <FeaturedProjects projects={featuredProjects} />
+      <LatestBlogPosts posts={latestPosts} />
+      <SkillsShowcase />
+    </>
   );
 }

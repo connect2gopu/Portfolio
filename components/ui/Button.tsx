@@ -41,6 +41,19 @@ export function Button({
   const classes = cn(baseStyles, variants[variant], sizes[size], className);
 
   if (href) {
+    // Handle external links
+    if (href.startsWith("http")) {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={classes}
+        >
+          {children}
+        </a>
+      );
+    }
     return (
       <Link href={href} className={classes}>
         {children}
