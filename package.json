@@ -10,31 +10,33 @@
     "dev:tina": "tinacms dev -c \"next dev\""
   },
   "dependencies": {
+    "@tinacms/cli": "^1.5.0",
+    "@tinacms/mdx": "^1.5.0",
+    "@vercel/analytics": "^1.2.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "gray-matter": "^4.0.3",
     "next": "^14.2.0",
+    "next-mdx-remote": "^4.4.0",
+    "next-seo": "^6.6.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "@tinacms/cli": "^1.5.0",
-    "tinacms": "^1.5.0",
-    "@tinacms/mdx": "^1.5.0",
-    "next-mdx-remote": "^4.4.0",
-    "@vercel/analytics": "^1.2.0",
-    "next-seo": "^6.6.0",
     "react-hook-form": "^7.52.0",
-    "date-fns": "^3.6.0",
     "reading-time": "^1.5.0",
-    "gray-matter": "^4.0.3",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.4.0"
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^2.4.0",
+    "tinacms": "^1.5.0"
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.0"
+    "typescript": "^5.5.0"
   }
 }
