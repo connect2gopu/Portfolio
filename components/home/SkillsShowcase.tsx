@@ -4,26 +4,34 @@ interface Skill {
 }
 
 const skills: Skill[] = [
+  // Languages
+  { name: "JavaScript", category: "Languages" },
+  { name: "TypeScript", category: "Languages" },
+  { name: "Python", category: "Languages" },
+  { name: "Java", category: "Languages" },
   // Frontend
-  { name: "React", category: "Frontend" },
+  { name: "React.js", category: "Frontend" },
   { name: "Next.js", category: "Frontend" },
-  { name: "TypeScript", category: "Frontend" },
-  { name: "Tailwind CSS", category: "Frontend" },
-  { name: "JavaScript", category: "Frontend" },
+  { name: "Redux", category: "Frontend" },
+  { name: "React Native", category: "Frontend" },
+  { name: "TailwindCSS", category: "Frontend" },
   // Backend
   { name: "Node.js", category: "Backend" },
-  { name: "Express", category: "Backend" },
-  { name: "REST APIs", category: "Backend" },
-  // Tools
-  { name: "Git", category: "Tools" },
-  { name: "Docker", category: "Tools" },
-  { name: "Vercel", category: "Tools" },
-  // CMS
-  { name: "Tina CMS", category: "CMS" },
-  { name: "Contentful", category: "CMS" },
+  { name: "Express.js", category: "Backend" },
+  { name: "AWS", category: "Backend" },
+  { name: "GraphQL", category: "Backend" },
+  // Tools & DevOps
+  { name: "Git", category: "Tools & DevOps" },
+  { name: "Docker", category: "Tools & DevOps" },
+  { name: "Jest", category: "Tools & DevOps" },
+  { name: "Webpack", category: "Tools & DevOps" },
+  // Database
+  { name: "MongoDB", category: "Database" },
+  { name: "MySQL", category: "Database" },
+  { name: "Redis", category: "Database" },
 ];
 
-const categories = ["Frontend", "Backend", "Tools", "CMS"];
+const categories = ["Languages", "Frontend", "Backend", "Tools & DevOps", "Database"];
 
 export function SkillsShowcase() {
   return (

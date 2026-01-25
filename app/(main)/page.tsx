@@ -8,8 +8,8 @@ import { generateSEO } from "@/lib/seo";
 import { Metadata } from "next";
 
 export const metadata: Metadata = generateSEO({
-  title: "Home | Portfolio",
-  description: "Software developer, technical writer & open-source maintainer. Welcome to my portfolio.",
+  title: "Gopal Sharma | Team Lead & Full-Stack Developer",
+  description: "Team Lead (Software Engineering) with 7+ years of experience building scalable web applications and leading cross-functional teams.",
 });
 
 export default function Home() {

@@ -6,8 +6,8 @@ export function ResumeDownload() {
   const handleDownload = () => {
     // Create a link element and trigger download
     const link = document.createElement("a");
-    link.href = "/resume.pdf";
-    link.download = "resume.pdf";
+    link.href = "/resume/Resume_Gopal_7_YOE.pdf";
+    link.download = "Resume_Gopal_7_YOE.pdf";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

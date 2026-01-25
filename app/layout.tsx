@@ -10,7 +10,10 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = generateSEO();
+export const metadata: Metadata = generateSEO({
+  title: "Gopal Sharma | Team Lead & Full-Stack Developer",
+  description: "Team Lead (Software Engineering) with 7+ years of experience building scalable web applications and leading cross-functional teams.",
+});
 
 export default function RootLayout({
   children,

@@ -32,17 +32,17 @@ export default function ContactPage() {
               <div>
                 <p className="font-medium text-foreground mb-1">Email</p>
                 <a
-                  href="mailto:your.email@example.com"
+                  href="mailto:connect2gopu@gmail.com"
                   className="hover:text-primary transition-colors"
                 >
-                  your.email@example.com
+                  connect2gopu@gmail.com
                 </a>
               </div>
               <div>
                 <p className="font-medium text-foreground mb-1">Social Media</p>
                 <div className="flex gap-4">
                   <a
-                    href="https://github.com"
+                    href="https://github.com/whogopu"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-primary transition-colors"
@@ -51,7 +51,7 @@ export default function ContactPage() {
                     GitHub
                   </a>
                   <a
-                    href="https://linkedin.com"
+                    href="https://linkedin.com/in/whogopu"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-primary transition-colors"
@@ -60,13 +60,13 @@ export default function ContactPage() {
                     LinkedIn
                   </a>
                   <a
-                    href="https://twitter.com"
+                    href="https://leetcode.com/whogopu"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-primary transition-colors"
-                    aria-label="Twitter"
+                    aria-label="LeetCode"
                   >
-                    Twitter
+                    LeetCode
                   </a>
                 </div>
               </div>

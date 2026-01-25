@@ -5,20 +5,24 @@ interface SkillCategory {
 
 const skillCategories: SkillCategory[] = [
   {
+    name: "Languages",
+    skills: ["JavaScript", "TypeScript", "C/C++", "Java", "Python", "SQL", "NoSQL"],
+  },
+  {
     name: "Frontend",
-    skills: ["React", "Next.js", "TypeScript", "JavaScript", "Tailwind CSS", "HTML5", "CSS3"],
+    skills: ["React.js", "Next.js", "Redux", "React Native", "React Query", "TailwindCSS", "Figma", "HTML", "CSS"],
   },
   {
     name: "Backend",
-    skills: ["Node.js", "Express", "REST APIs", "GraphQL", "MongoDB", "PostgreSQL"],
+    skills: ["Node.js", "Express.js", "AWS", "Firebase", "RESTful APIs", "GraphQL"],
   },
   {
-    name: "Tools & Technologies",
-    skills: ["Git", "Docker", "Vercel", "AWS", "CI/CD", "Webpack", "Jest"],
+    name: "Build, Tooling & DevOps",
+    skills: ["Git", "Postman", "Jira", "Jest", "Webpack", "Babel", "Vite", "Docker", "Nginx"],
   },
   {
-    name: "CMS & Content",
-    skills: ["Tina CMS", "Contentful", "MDX", "Markdown"],
+    name: "Database",
+    skills: ["MySQL", "MongoDB", "Redis"],
   },
 ];
 
