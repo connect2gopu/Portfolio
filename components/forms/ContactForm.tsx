@@ -115,7 +115,7 @@ export function ContactForm() {
             type="text"
             {...register("subject", { required: "Subject is required" })}
             className="w-full px-4 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="What's this about?"
+            placeholder="What&apos;s this about?"
           />
           {errors.subject && (
             <p className="mt-1 text-sm text-red-500">{errors.subject.message}</p>

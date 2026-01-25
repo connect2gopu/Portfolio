@@ -4,7 +4,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = generateSEO({
   title: "Contact | Portfolio",
-  description: "Get in touch with me. I'd love to hear from you!",
+  description: "Get in touch with me. I&apos;d love to hear from you!",
   url: "/contact",
 });
 
