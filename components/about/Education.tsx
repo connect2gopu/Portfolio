@@ -14,7 +14,7 @@ export function Education() {
             Grade: 71%
           </p>
           <p className="text-sm text-muted-foreground">
-            July 2014 - May 2018 | Delhi, India
+            Bachelor of Technology - \textbf{Grade | MM YYYY -- MM YYYY
           </p>
         </div>
       </div>

@@ -9,7 +9,7 @@ export function Hero() {
           Team Lead (Software Engineering) & Full-Stack Developer
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          I&apos;m Gopal Sharma, a passionate software engineer with 7+ years of experience building scalable web applications, leading cross-functional teams, and delivering high-impact product features that enhance user experience and drive business growth.
+          I&apos;m Gopal sharma, a passionate software engineer with 7+ years of experience building scalable web applications, leading cross-functional teams, and delivering high-impact product features that enhance user experience and drive business growth.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button href="/projects" size="lg" className="text-base">

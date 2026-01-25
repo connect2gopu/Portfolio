@@ -1,0 +1,345 @@
+%-------------------------
+% Resume in Latex
+% Author : Abey George
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontawesome5}
+\usepackage{multicol}
+\usepackage{graphicx}
+\setlength{\multicolsep}{-3.0pt}
+\setlength{\columnsep}{-1pt}
+\input{glyphtounicode}
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+\RequirePackage{fontawesome}
+\usepackage{tikz}
+\usetikzlibrary{svg.path}
+
+
+\definecolor{cvblue}{HTML}{0E5484}
+\definecolor{black}{HTML}{130810}
+\definecolor{darkcolor}{HTML}{0F4539}
+\definecolor{cvgreen}{HTML}{3BD80D}
+\definecolor{taggreen}{HTML}{00E278}
+\definecolor{SlateGrey}{HTML}{2E2E2E}
+\definecolor{LightGrey}{HTML}{666666}
+\colorlet{name}{black}
+\colorlet{tagline}{darkcolor}
+\colorlet{heading}{darkcolor}
+\colorlet{headingrule}{cvblue}
+\colorlet{accent}{darkcolor}
+\colorlet{emphasis}{SlateGrey}
+\colorlet{body}{LightGrey}
+
+
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
+% \pagestyle{fancy}
+% \fancyhf{}  % clear all header and footer fields
+% \fancyfoot{}
+% \renewcommand{\headrulewidth}{0pt}
+% \renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.6in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1.19in}
+\addtolength{\topmargin}{-.7in}
+\addtolength{\textheight}{1.4in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large\bfseries
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\classesList}[4]{
+    \item\small{
+        {#1 #2 #3 #4 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{1.0\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{\large#1} & \textbf{\small #2} \\
+      \textit{\large#3} & \textit{\small #4} \\
+      
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{1.001\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & \textbf{\small #2}\\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemi{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.0in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+
+\newcommand\sbullet[1][.5]{\mathbin{\vcenter{\hbox{\scalebox{#1}{$\bullet$}}}}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%----------HEADING----------
+
+
+\begin{center}
+    {\Huge \scshape Gopal1 sharma} \\ 
+    \small \href{tel:+919069367364}{ \raisebox{-0.1\height}\faPhone\ \underline{+91-9069367364} ~} \href{mailto:connect2gopu@gmail.com}{\raisebox{-0.2\height}\faEnvelope\  \underline{connect2gopu@gmail.com}} ~ 
+    \href{https://linkedin.com/in/whogopu}{\raisebox{-0.2\height}\faLinkedinSquare\ \underline{linkedin/whogopu}}  ~
+    \href{https://github.com/whogopu}{\raisebox{-0.2\height}\faGithub\ \underline{github/whogopu}} ~
+    \href{https://leetcode.com/u/whogopu/}{\raisebox{-0.2\height}\faCode\ \underline{leetcode/whogopu}} ~
+    % \href{https://codeforces.com/profile/yourid}{\raisebox{-0.2\height}\faPoll\ \underline{yourid}}
+    % \vspace{-8pt}
+\end{center}
+
+%-----------PROGRAMMING SKILLS-----------
+\section{TECHNICAL SKILLS}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{\normalsize{Languages:}}{ \normalsize{Javascript, Typescript,  C/C++,  Java, Python,  SQL, NoSQL.}} \\
+     \textbf{\normalsize{Frontend:}}{ \normalsize{React.js, Next.js,  Redux,  React Native, React Query,  TailwindCSS, Figma, HTML, CSS.}} \\
+    \textbf{\normalsize{Backend:}}{ \normalsize{Node.js, Express.js, AWS, Firebase, RESTful APIs, GraphQL.}} \\
+    % \textbf{\normalsize{Tools:}}{ \normalsize{Git, Postman, Jira, Jest, Webpack, Babel, Vite.}} \\
+    \textbf{\normalsize{Build, Tooling \& DevOps:}}{ \normalsize{Git, Postman, Jira, Jest, Webpack, Babel, Vite, Docker, Nginx.}} \\
+    % \textbf{\normalsize{Build, Tooling & DevOps:}}{ \normalsize{Git, Postman, Jira, Jest, Webpack, Babel, Vite, Docker, Nginx.}} \\
+    
+     \textbf{\normalsize{Database:}}{\normalsize{ MySQL, MongoDB, Redis.}} \\
+     % \textbf{\normalsize{DevOps:}}{ \normalsize{Docker, Nginx.}} \\
+
+    }}
+ \end{itemize}
+ \vspace{-15pt}
+
+
+% %------RELEVANT COURSEWORK-------
+% \section{COURSEWORK / SKILLS}
+%     %\resumeSubHeadingListStart
+%         \begin{multicols}{4}
+%             \begin{itemize}[itemsep=-2pt, parsep=5pt]
+%                 \item Data Structures \& Algorithms
+%                 \item Operating Systems
+%                 \item Network Security
+%                 \item Database Management System (DBMS)
+%                 \item Artificial Intelligence
+%                 \item OOPS Concept
+%                 \item Web Development
+%                 \item Android Development
+%             \end{itemize}
+%         \end{multicols}
+%         \vspace*{2.0\multicolsep}
+%     %\resumeSubHeadingListEnd
+
+
+%
+
+
+%-----------EXPERIENCE-----------
+\section{EXPERIENCE}
+\vspace{6pt}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {Info Edge India Ltd - 99acres}{July 2019 - Present} 
+      {\underline{Team Lead (Software Engineering) }}{Noida, Uttar Pradesh}
+      \resumeItemListStart
+        % \resumeItem{\normalsize{About the role \textbf{and responsibilities carried out.}}}
+        \resumeItem{\normalsize{\textbf{Directed a cross-functional team }to deliver high-impact product features, enhancing platform competitiveness and improving user satisfaction (\textbf{4.3/5 on play store}).}}
+        \resumeItem{\normalsize{Developed a page speed monitoring tool, reduced LCP, CLS \& INP \textbf{from 400 ms to 180 ms} and improved other Core Web
+Vitals, leading to enhanced user retention.}}
+         \resumeItem{\normalsize{Devised and implemented adaptive widget positioning, \textbf{increasing ad visibility }and driving \textbf{20\% higher} click-through rates on promoted content.}}
+          \resumeItem{\normalsize{Improved platform response times by implementing intelligent \textbf{CDN-backed Edge caching} for key pages, resulting in \textbf{1.5× improvement} in SEO crawl budget utilization.}}
+        \resumeItem{\normalsize{Introduced \textbf{event tracking} across the application, resulting in actionable insights that boosted \textbf{feature adoption by 30\%}.}}
+        \resumeItem{\normalsize{Optimized app \textbf{load time by 40\%} by re-architecting API call flow, enabling backend-for-frontend pattern deferring non-critical data, and introducing component-level lazy loading and pagination improvements.}}
+          % \resumeItem{\normalsize{Worked collaboratively with \textbf{cross-functional teams}, leveraging \textbf{Agile methodology} to ensure efficient project execution and delivery, fostering a cohesive and streamlined workflow.}}
+        
+          % \resumeItem{\normalsize{Spearhead \textbf{end-to-end} feature development, delivering \textbf{3 major} user-centric features within tight deadlines.}}
+          \resumeItem{\normalsize{Enhanced system availability to \textbf{99.9\% up-time} by anticipating critical issues and leveraging \textbf{KPIs} for monitoring.}}
+      \resumeItemListEnd  
+
+      
+\vspace{3pt}
+      {\textit{\normalsize{\underline{Lead Engineer}}}}
+      \resumeItemListStart
+        % \resumeItem{\normalsize{About the role \textbf{and responsibilities carried out.}}}
+        
+        % \resumeItem{\normalsize{Enhanced system availability to \textbf{99.9\% up-time} by anticipating critical issues and leveraging \textbf{KPIs} for monitoring.}}
+        \resumeItem{\normalsize{Conceptualized and delivered \textbf{video features (Shorts and Stories)}, resulting in a \textbf{25\% increase} in user engagement
+and time spent on the platform.}}
+        \resumeItem{\normalsize{Built configurable search and filter options, increasing \textbf{A/B testing} efficiency and driving improvement in \textbf{data-driven decision-making}.}}
+        \resumeItem{\normalsize{Championed the transition to a Microfrontend architecture, reducing cross-team dependencies, enabling modular development, and achieving \textbf{2X faster} feature rollouts.}}
+        \resumeItem{\normalsize{Overhauled search result tuples, boosting user experience and driving a \textbf{15\% increase} in CTA's CTR.}}
+      \resumeItemListEnd  
+
+
+      \vspace{3pt}
+      {\textit{\normalsize{\underline{Senior Software Engineer}}}}
+      \resumeItemListStart
+        % \resumeItem{\normalsize{About the role \textbf{and responsibilities carried out.}}}
+        
+        \resumeItem{\normalsize{Proposed and executed a \textbf{self-hosted key functionalities} for cross-site use, reducing development cycle time by \textbf{30\%} and ensuring UI/UX consistency.}}
+        \resumeItem{\normalsize{Enhanced no-index URL quality, improving \textbf{SEO budget} efficiency by \textbf{30\%} and boosting crawl performance.}}
+        \vspace{-12pt}
+      \resumeItemListEnd  
+  \resumeSubHeadingListEnd
+
+\vspace{-6pt}
+\resumeSubHeadingListStart
+
+    \resumeSubheading
+      {So City}{May 2018 - Jun 2019} 
+      {\underline{Software Engineer}}{Delhi}
+      \resumeItemListStart
+        % \resumeItem{\normalsize{About the role \textbf{and responsibilities carried out.}}}
+        \resumeItem{\normalsize{Engineered an \textbf{in-house web-based tool}, driving a \textbf{40\% increase in postings} via the internal platform by streamlining workflows.}}
+        \resumeItem{\normalsize{Automated \textbf{database backup and restore processes}, significantly enhancing data reliability.}}
+        \resumeItem{\normalsize{Designed and developed internal APIs to support content creation and publishing workflows for the platform, enabling efficient and reliable content posting across the site.}}
+         
+      \resumeItemListEnd  
+
+  \resumeSubHeadingListEnd
+
+  
+\vspace{-12pt}
+
+
+
+% %-----------PROJECTS-----------
+% \section{PROJECTS}
+%     \vspace{-5pt}
+%     \resumeSubHeadingListStart
+%        \resumeProjectHeading
+%           {\href{ProjectLink.com}{\textbf{\large{\underline{Project Name}}} \href{Project Link}{\raisebox{-0.1\height}\faExternalLink }} $|$ \large{\underline{Technology Stack Used}}}{MM YYYY}
+%           \resumeItemListStart
+%             \resumeItem{\normalsize{About project \textbf{key points to highlight}.}}
+
+%             \resumeItem{\textcolor{accent} {\href{Live Project Link} {\underline{\normalsize{Live site here}}}}}
+%           \resumeItemListEnd 
+%           \vspace{-13pt}
+          
+%       \resumeProjectHeading
+%           {\href{ProjectLink.com}{\textbf{\large{\underline{Project Name}}} \href{Project Link}{\raisebox{-0.1\height}\faExternalLink }} $|$ \large{\underline{Technology Stack Used}}}{MM YYYY}
+%           \resumeItemListStart
+%             \resumeItem{\normalsize{About project \textbf{highlight key points}.}}
+%             \resumeItem{\textcolor{accent} {\href{Project Link} {\underline{\normalsize{Download}}}}}
+%           \resumeItemListEnd
+%           \vspace{-13pt}
+          
+%           \resumeProjectHeading
+%           {\href{ProjectLink.com}{\textbf{\large{\underline{Project Name}}} \href{Project Link}{\raisebox{-0.1\height}\faExternalLink }} $|$ \large{\underline{Technology Stack Used}}}{MM YYYY}
+%           \resumeItemListStart
+%             \resumeItem{\normalsize{About Project \textbf{highlight key points} }}
+            
+%           \resumeItemListEnd 
+          
+%     \resumeSubHeadingListEnd
+% \vspace{-12pt}
+
+
+%-----------EDUCATION-----------
+\section{EDUCATION}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Guru Gobind Singh Indraprastha University }{Jul 2014 -- May 2018}
+      {Bachelor of Technology - \textbf{Grade} - \textbf{71\%}}{Delhi, India}
+  \resumeSubHeadingListEnd
+  
+  % \resumeSubHeadingListStart
+  %   \resumeSubheading
+  %     {College Name}{MM YYYY -- MM YYYY}
+  %     {Exam Name - Course Name  - \textbf{Percentage} - \textbf{xx\%}}{city, country}
+  % \resumeSubHeadingListEnd
+
+
+% %-----------INVOLVEMENT---------------
+% \section{EXTRACURRICULAR}
+%     \resumeSubHeadingListStart
+%         \resumeSubheading{Organization Name \href{Certificate Proof link}{\raisebox{-0.1\height}\faExternalLink } }{MM YYYY -- MM YYYY}{\underline{Role}}{Location}
+%             \resumeItemListStart
+%                 \resumeItem{\normalsize{About the role \textbf{and responsibilities carried out.}}}
+%                 \resumeItem{\normalsize{Participation Certificate. \href{ParticipationCertificateLink.com}{\raisebox{-0.1\height}\faExternalLink }}}
+%             \resumeItemListEnd
+%     \resumeSubHeadingListEnd
+%  \vspace{-11pt}
+ 
+%  %-----------CERTIFICATIONS---------------
+% \section{CERTIFICATIONS}
+
+% $\sbullet[.75] \hspace{0.1cm}$ {\href{certificateLink.com}{ReactJS \& Redux - Udemy}} \hspace{1.6cm}
+% $\sbullet[.75] \hspace{0.1cm}$ {\href{certificateLink.com}{Java}} \hspace{2.59cm}
+% $\sbullet[.75] \hspace{0.2cm}${\href{certificateLink.com} {Command Line in Linux - Coursera}}\\
+
+% $\sbullet[.75] \hspace{0.2cm}${\href{certificateLink.com}{Python for Data Science - XIE}} \hspace{1cm}
+% $\sbullet[.75] \hspace{0.1cm}$ {\href{certificateLink.com}{SQL}} \hspace{2.6cm}
+% $\sbullet[.75] \hspace{0.2cm}${\href{certificateLink.com}{Microsoft AI Classroom - Microsoft}} \\
+
+% $\sbullet[.75] \hspace{0.2cm}${\href{certificateLink.com}{\textbf{5 Stars} in \textbf{C++} \& \textbf{SQL} \href{certificateLink.com}{\raisebox{-0.1\height}\faExternalLink }}}\hspace{1.45cm}
+% $\sbullet[.75] \hspace{0.2cm}${\href{certificateLink.com}{MongoDB Basics}} \hspace{0.5cm}
+% $\sbullet[.75] \hspace{0.2cm}${\href{certificateLink.com}{NodeJS with Express \& MongoDB - Udemy}} \\
+
+
+\end{document}

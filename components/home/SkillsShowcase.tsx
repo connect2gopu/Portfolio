@@ -4,30 +4,28 @@ interface Skill {
 }
 
 const skills: Skill[] = [
-  // Languages
-  { name: "JavaScript", category: "Languages" },
-  { name: "TypeScript", category: "Languages" },
-  { name: "Python", category: "Languages" },
+  { name: "Javascript", category: "Languages" },
+  { name: "Typescript", category: "Languages" },
+  { name: "C/C++", category: "Languages" },
   { name: "Java", category: "Languages" },
-  // Frontend
+  { name: "Python", category: "Languages" },
+  { name: "SQL", category: "Languages" },
+  { name: "NoSQL", category: "Languages" },
   { name: "React.js", category: "Frontend" },
   { name: "Next.js", category: "Frontend" },
   { name: "Redux", category: "Frontend" },
   { name: "React Native", category: "Frontend" },
-  { name: "TailwindCSS", category: "Frontend" },
-  // Backend
+  { name: "React Query", category: "Frontend" },
   { name: "Node.js", category: "Backend" },
   { name: "Express.js", category: "Backend" },
   { name: "AWS", category: "Backend" },
-  { name: "GraphQL", category: "Backend" },
-  // Tools & DevOps
+  { name: "Firebase", category: "Backend" },
   { name: "Git", category: "Tools & DevOps" },
-  { name: "Docker", category: "Tools & DevOps" },
+  { name: "Postman", category: "Tools & DevOps" },
+  { name: "Jira", category: "Tools & DevOps" },
   { name: "Jest", category: "Tools & DevOps" },
-  { name: "Webpack", category: "Tools & DevOps" },
-  // Database
-  { name: "MongoDB", category: "Database" },
   { name: "MySQL", category: "Database" },
+  { name: "MongoDB", category: "Database" },
   { name: "Redis", category: "Database" },
 ];
 
@@ -43,7 +41,7 @@ export function SkillsShowcase() {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {categories.map((category) => {
           const categorySkills = skills.filter((skill) => skill.category === category);
           return (

@@ -8,8 +8,8 @@ import { Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = generateSEO({
-  title: "About | Gopal Sharma",
-  description: "Learn more about Gopal Sharma's 7+ years of experience as a Team Lead and Full-Stack Developer, including work at Info Edge India Ltd (99acres) and So City.",
+  title: "About | Gopal sharma",
+  description: "Learn more about Gopal sharma's 7+ years of experience as a Team Lead and Full-Stack Developer, including work at Info Edge India Ltd (99acres) and So City.",
   url: "/about",
 });
 
@@ -21,12 +21,12 @@ export default function AboutPage() {
         <div className="mb-8">
           <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary to-accent p-1 mb-6">
             <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-              <span className="text-4xl font-bold text-primary">GS</span>
+              <span className="text-4xl font-bold text-primary">GS</g/g/span>
             </div>
           </div>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Gopal Sharma
+          Gopal sharma
         </h1>
         <p className="text-xl md:text-2xl text-primary font-medium mb-4">
           Team Lead (Software Engineering) & Full-Stack Developer
@@ -39,7 +39,7 @@ export default function AboutPage() {
             connect2gopu@gmail.com
           </a>
           <span>•</span>
-          <span>+91-9069367364</span>
+          <span>+919069367364</span>
         </div>
       </div>
 

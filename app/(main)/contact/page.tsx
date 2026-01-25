@@ -32,7 +32,7 @@ export default function ContactPage() {
               <div>
                 <p className="font-medium text-foreground mb-1">Email</p>
                 <a
-                  href="mailto:connect2gopu@gmail.com"
+                  href="connect2gopu@gmail.com"
                   className="hover:text-primary transition-colors"
                 >
                   connect2gopu@gmail.com
@@ -60,7 +60,7 @@ export default function ContactPage() {
                     LinkedIn
                   </a>
                   <a
-                    href="https://leetcode.com/whogopu"
+                    href="https://leetcode.com/u/whogopu/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-primary transition-colors"
