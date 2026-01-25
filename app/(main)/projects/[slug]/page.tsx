@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getProjectBySlug, getProjectSlugs } from "@/lib/projects";
 import { serializeMDX } from "@/lib/mdx";
-import { MDXRemote } from "next-mdx-remote";
+import { MDXContent } from "@/components/mdx/MDXContent";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
@@ -14,6 +14,8 @@ interface ProjectPageProps {
     slug: string;
   };
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
   const slugs = getProjectSlugs();
@@ -143,11 +145,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       </header>
 
       {/* Content */}
-      {mdxSource && (
-        <div className="prose prose-lg dark:prose-invert max-w-none">
-          <MDXRemote {...mdxSource} />
-        </div>
-      )}
+      {mdxSource && <MDXContent source={mdxSource} />}
 
       {/* Gallery */}
       {project.galleryImages && project.galleryImages.length > 0 && (

@@ -9,7 +9,7 @@ export function Hero() {
           Software developer, technical writer & open-source maintainer
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          I'm passionate about learning and building open-source software that is beneficial to developers and the world at large.
+          I&apos;m passionate about learning and building open-source software that is beneficial to developers and the world at large.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button href="/projects" size="lg" className="text-base">

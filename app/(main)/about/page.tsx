@@ -28,7 +28,7 @@ export default function AboutPage() {
           Software Developer, Technical Writer & Open-Source Maintainer
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          I'm passionate about learning and building open-source software that is beneficial to developers and the world at large. With experience in modern web technologies, I enjoy creating solutions that make a difference.
+          I&apos;m passionate about learning and building open-source software that is beneficial to developers and the world at large. With experience in modern web technologies, I enjoy creating solutions that make a difference.
         </p>
       </div>
 

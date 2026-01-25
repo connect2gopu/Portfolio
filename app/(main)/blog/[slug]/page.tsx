@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getBlogSlugs, getAllBlogPosts } from "@/lib/blog";
 import { serializeMDX } from "@/lib/mdx";
-import { MDXRemote } from "next-mdx-remote";
+import { MDXContent } from "@/components/mdx/MDXContent";
 import Image from "next/image";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
@@ -16,6 +16,8 @@ interface BlogPostPageProps {
     slug: string;
   };
 }
+
+export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
   const slugs = getBlogSlugs();
@@ -158,8 +160,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
           {/* MDX Content */}
           {mdxSource && (
-            <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
-              <MDXRemote {...mdxSource} />
+            <div className="mb-12">
+              <MDXContent source={mdxSource} />
             </div>
           )}
 
