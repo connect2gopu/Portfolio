@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dev:tina": "tinacms dev -c \"next dev\""
+    "dev:tina": "tinacms dev -c \"next dev\"",
+    "parse-resume": "tsx scripts/parse-resume.ts"
   },
   "dependencies": {
     "@tinacms/cli": "^1.5.0",
@@ -38,6 +39,7 @@
     "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.5.0"
   }
 }

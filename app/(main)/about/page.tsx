@@ -4,16 +4,32 @@ import { ResumeDownload } from "@/components/about/ResumeDownload";
 import { SocialLinks } from "@/components/about/SocialLinks";
 import { Education } from "@/components/about/Education";
 import { generateSEO } from "@/lib/seo";
+import { getPersonalInfo } from "@/lib/resume";
 import { Metadata } from "next";
 import Image from "next/image";
 
+const personalInfo = getPersonalInfo();
+const experienceText = personalInfo.yearsOfExperience
+  ? `${personalInfo.yearsOfExperience}+ years`
+  : "7+ years";
+
 export const metadata: Metadata = generateSEO({
-  title: "About | Gopal Sharma",
-  description: "Learn more about Gopal Sharma's 7+ years of experience as a Team Lead and Full-Stack Developer, including work at Info Edge India Ltd (99acres) and So City.",
+  title: `About | ${personalInfo.name}`,
+  description: `Learn more about ${personalInfo.name}'s ${experienceText} of experience as ${personalInfo.title}, including work at Info Edge India Ltd (99acres) and So City.`,
   url: "/about",
 });
 
 export default function AboutPage() {
+  const personalInfo = getPersonalInfo();
+
+  // Get initials from name
+  const initials = personalInfo.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
       {/* Hero Section */}
@@ -21,25 +37,25 @@ export default function AboutPage() {
         <div className="mb-8">
           <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary to-accent p-1 mb-6">
             <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-              <span className="text-4xl font-bold text-primary">GS</span>
+              <span className="text-4xl font-bold text-primary">{initials}</span>
             </div>
           </div>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Gopal Sharma
+          {personalInfo.name}
         </h1>
         <p className="text-xl md:text-2xl text-primary font-medium mb-4">
-          Team Lead (Software Engineering) & Full-Stack Developer
+          {personalInfo.title}
         </p>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          A passionate software engineer with 7+ years of experience building scalable web applications, leading cross-functional teams, and delivering high-impact product features that enhance user experience and drive business growth.
+          {personalInfo.summary}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-          <a href="mailto:connect2gopu@gmail.com" className="hover:text-primary transition-colors">
-            connect2gopu@gmail.com
+          <a href={`mailto:${personalInfo.email}`} className="hover:text-primary transition-colors">
+            {personalInfo.email}
           </a>
           <span>•</span>
-          <span>+91-9069367364</span>
+          <span>{personalInfo.phone}</span>
         </div>
       </div>
 

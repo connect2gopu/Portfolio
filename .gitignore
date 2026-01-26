@@ -37,3 +37,6 @@ next-env.d.ts
 
 # tina
 .tina/__generated__
+
+# resume data (generated from LaTeX)
+lib/resume-data.json
