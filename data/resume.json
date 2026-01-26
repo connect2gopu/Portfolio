@@ -1,0 +1,53 @@
+{
+  "personalInfo": {
+    "name": "Gopal sharma",
+    "contact": {
+      "email": "connect2gopu@gmail.com",
+      "phone": "+91-9069367364",
+      "linkedin": "https://linkedin.com/in/whogopu",
+      "github": "https://github.com/whogopu",
+      "website": "https://leetcode.com/u/whogopu/"
+    }
+  },
+  "workExperience": [
+    {
+      "company": "Info Edge India Ltd - 99acres",
+      "role": "Team Lead (Software Engineering)   Noida, Uttar Pradesh",
+      "period": "July 2019 - Present",
+      "description": ""
+    }
+  ],
+  "education": [
+    {
+      "degree": "B",
+      "institution": "Guru Gobind Singh Indraprastha University",
+      "period": "Jul 2014 – May 2018",
+      "location": "Delhi, India"
+    }
+  ],
+  "skills": [],
+  "links": [
+    {
+      "text": "tel:+919069367364",
+      "url": "tel:+919069367364"
+    },
+    {
+      "text": "mailto:connect2gopu@gmail.com",
+      "url": "mailto:connect2gopu@gmail.com"
+    },
+    {
+      "text": "https://linkedin.com/in/whogopu",
+      "url": "https://linkedin.com/in/whogopu"
+    },
+    {
+      "text": "https://github.com/whogopu",
+      "url": "https://github.com/whogopu"
+    },
+    {
+      "text": "https://leetcode.com/u/whogopu/",
+      "url": "https://leetcode.com/u/whogopu/"
+    }
+  ],
+  "extractedAt": "2026-01-26T03:28:41.575Z",
+  "sourceFile": "Resume_Gopal_7_YOE.pdf"
+}
