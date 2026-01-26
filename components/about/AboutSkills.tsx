@@ -1,30 +1,4 @@
-interface SkillCategory {
-  name: string;
-  skills: string[];
-}
-
-const skillCategories: SkillCategory[] = [
-  {
-    name: "Languages",
-    skills: ["JavaScript", "TypeScript", "C/C++", "Java", "Python", "SQL", "NoSQL"],
-  },
-  {
-    name: "Frontend",
-    skills: ["React.js", "Next.js", "Redux", "React Native", "React Query", "TailwindCSS", "Figma", "HTML", "CSS"],
-  },
-  {
-    name: "Backend",
-    skills: ["Node.js", "Express.js", "AWS", "Firebase", "RESTful APIs", "GraphQL"],
-  },
-  {
-    name: "Build, Tooling & DevOps",
-    skills: ["Git", "Postman", "Jira", "Jest", "Webpack", "Babel", "Vite", "Docker", "Nginx"],
-  },
-  {
-    name: "Database",
-    skills: ["MySQL", "MongoDB", "Redis"],
-  },
-];
+import { skillCategories } from "@/data/resume";
 
 export function AboutSkills() {
   return (
