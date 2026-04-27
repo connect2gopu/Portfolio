@@ -8,11 +8,17 @@ export function Hero() {
   return (
     <section className="container mx-auto px-4 py-20 md:py-32">
       <div className="max-w-3xl mx-auto text-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          {currentRole} & Full-Stack Developer
+        <p className="text-base md:text-lg font-medium text-muted-foreground mb-3 tracking-wide uppercase">
+          Hi, I&apos;m
+        </p>
+        <h1 className="text-5xl md:text-7xl font-extrabold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
+          {name}
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          I&apos;m {name}, a passionate software engineer with 7+ years of experience building scalable web applications, leading cross-functional teams, and delivering high-impact product features that enhance user experience and drive business growth.
+        <p className="text-xl md:text-2xl font-semibold text-foreground/80 mb-6">
+          {currentRole} &amp; Full-Stack Developer
+        </p>
+        <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+          A passionate software engineer with 7+ years of experience building scalable web applications, leading cross-functional teams, and delivering high-impact product features that enhance user experience and drive business growth.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button href="/projects" size="lg" className="text-base">
