@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { getProjectBySlug, getProjectSlugs } from "@/lib/projects";
-import { serializeMDX } from "@/lib/mdx";
 import { MDXContent } from "@/components/mdx/MDXContent";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
@@ -47,10 +46,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   if (!project) {
     notFound();
   }
-
-  const mdxSource = project.content
-    ? await serializeMDX(project.content)
-    : null;
 
   return (
     <article className="container mx-auto px-4 py-16 max-w-4xl">
@@ -145,7 +140,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       </header>
 
       {/* Content */}
-      {mdxSource && <MDXContent source={mdxSource} />}
+      {project.content && <MDXContent source={project.content} />}
 
       {/* Gallery */}
       {project.galleryImages && project.galleryImages.length > 0 && (

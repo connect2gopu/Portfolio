@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { getBlogPostBySlug, getBlogSlugs, getAllBlogPosts } from "@/lib/blog";
-import { serializeMDX } from "@/lib/mdx";
 import { MDXContent } from "@/components/mdx/MDXContent";
 import Image from "next/image";
 import { formatDate } from "@/lib/utils";
@@ -53,7 +52,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const mdxSource = post.content ? await serializeMDX(post.content) : null;
   const allPosts = getAllBlogPosts();
   
   // Get related posts (same category, excluding current post)
@@ -159,9 +157,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </header>
 
           {/* MDX Content */}
-          {mdxSource && (
+          {post.content && (
             <div className="mb-12">
-              <MDXContent source={mdxSource} />
+              <MDXContent source={post.content} />
             </div>
           )}
 
