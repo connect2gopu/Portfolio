@@ -2,6 +2,7 @@ import { Hero } from "@/components/home/Hero";
 import { FeaturedProjects } from "@/components/home/FeaturedProjects";
 import { LatestBlogPosts } from "@/components/home/LatestBlogPosts";
 import { SkillsShowcase } from "@/components/home/SkillsShowcase";
+import { CallToAction } from "@/components/home/CallToAction";
 import { getFeaturedProjects } from "@/lib/projects";
 import { getLatestBlogPosts } from "@/lib/blog";
 import { generateSEO } from "@/lib/seo";
@@ -22,6 +23,7 @@ export default function Home() {
       <FeaturedProjects projects={featuredProjects} />
       <LatestBlogPosts posts={latestPosts} />
       <SkillsShowcase />
+      <CallToAction />
     </>
   );
 }
