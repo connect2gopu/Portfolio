@@ -1,9 +1,9 @@
 import { BlogPost } from "@/types";
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
+import { BlogPostImage } from "@/components/blog/BlogPostImage";
 
 interface LatestBlogPostsProps {
   posts: BlogPost[];
@@ -12,8 +12,8 @@ interface LatestBlogPostsProps {
 export function LatestBlogPosts({ posts }: LatestBlogPostsProps) {
   if (posts.length === 0) {
     return (
-      <section className="container mx-auto px-4 py-16 bg-muted/30">
-        <div className="flex items-center justify-between mb-8">
+      <section className="container mx-auto px-4 py-24 bg-muted/30">
+        <div className="flex items-center justify-between mb-10">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Latest Blog Posts</h2>
             <p className="text-muted-foreground">Thoughts, tutorials, and insights</p>
@@ -30,8 +30,8 @@ export function LatestBlogPosts({ posts }: LatestBlogPostsProps) {
   }
 
   return (
-    <section className="container mx-auto px-4 py-16 bg-muted/30">
-      <div className="flex items-center justify-between mb-8">
+    <section className="container mx-auto px-4 py-24 bg-muted/30">
+      <div className="flex items-center justify-between mb-10">
         <div>
           <h2 className="text-3xl md:text-4xl font-bold mb-2">Latest Blog Posts</h2>
           <p className="text-muted-foreground">Thoughts, tutorials, and insights</p>
@@ -40,33 +40,21 @@ export function LatestBlogPosts({ posts }: LatestBlogPostsProps) {
           View All
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => (
           <Link key={post.slug} href={`/blog/${post.slug}`}>
             <Card hover className="h-full flex flex-col">
               <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted">
-                {post.featuredImage && post.featuredImage.startsWith("/") ? (
-                  <Image
-                    src={post.featuredImage}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : post.featuredImage ? (
-                  <img
-                    src={post.featuredImage}
-                    alt={post.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-muted-foreground">No image</span>
-                  </div>
-                )}
+                <BlogPostImage
+                  src={post.featuredImage}
+                  alt={post.title}
+                  title={post.title}
+                  categories={post.categories}
+                />
               </div>
               <CardHeader>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground/70 mb-2">
                   <span>{formatDate(post.publishedDate)}</span>
                   {post.readingTime && (
                     <>

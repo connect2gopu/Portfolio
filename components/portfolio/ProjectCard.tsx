@@ -1,8 +1,8 @@
 import { Project } from "@/types";
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ProjectImage } from "./ProjectImage";
 
 interface ProjectCardProps {
   project: Project;
@@ -56,46 +56,16 @@ function getTechColor(tech: string): string {
   return TECH_COLORS[tech] ?? "bg-primary/10 text-primary";
 }
 
-function ProjectPlaceholder({ title, category }: { title: string; category?: string }) {
-  const initials = title
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 gap-2">
-      <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center border border-primary/20">
-        <span className="text-2xl font-bold text-primary">{initials}</span>
-      </div>
-      {category && (
-        <span className="text-xs text-muted-foreground">{category}</span>
-      )}
-    </div>
-  );
-}
-
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card hover className="flex flex-col h-full">
       <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted group/img">
-        {project.featuredImage && project.featuredImage.startsWith("/") ? (
-          <Image
-            src={project.featuredImage}
-            alt={project.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover/img:scale-105"
-          />
-        ) : project.featuredImage ? (
-          <img
-            src={project.featuredImage}
-            alt={project.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105"
-          />
-        ) : (
-          <ProjectPlaceholder title={project.title} category={project.category} />
-        )}
+        <ProjectImage
+          src={project.featuredImage}
+          alt={project.title}
+          title={project.title}
+          category={project.category}
+        />
 
         {/* Tech stack overlay on hover */}
         <div className="absolute inset-0 bg-foreground/75 dark:bg-background/80 flex flex-wrap content-center items-center justify-center gap-1.5 p-4 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300">

@@ -1,5 +1,6 @@
 import { ContactForm } from "@/components/forms/ContactForm";
 import { CopyEmailButton } from "@/components/contact/CopyEmailButton";
+import { LocalTime } from "@/components/contact/LocalTime";
 import { generateSEO } from "@/lib/seo";
 import { Metadata } from "next";
 
@@ -34,9 +35,12 @@ export default function ContactPage() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
             </span>
             <span className="text-sm font-medium text-green-700 dark:text-green-400">
-              Open to new opportunities
+              Open to Lead Engineering roles
             </span>
           </div>
+
+          {/* Local time */}
+          <LocalTime />
 
           <div>
             <h2 className="text-xl font-semibold mb-4">Contact Information</h2>

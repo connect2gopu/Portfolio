@@ -68,36 +68,81 @@ export const skillIcons: Record<string, JSX.Element> = {
   ),
 };
 
+const CORE_CATEGORIES = new Set(["Languages", "Frontend", "Backend"]);
+
 export function SkillsShowcase() {
+  const coreCategories = skillCategories.filter((c) => CORE_CATEGORIES.has(c.name));
+  const secondaryCategories = skillCategories.filter((c) => !CORE_CATEGORIES.has(c.name));
+
   return (
-    <section className="container mx-auto px-4 py-16">
-      <div className="text-center mb-12">
+    <section className="container mx-auto px-4 py-24">
+      <div className="text-center mb-14">
         <h2 className="text-3xl md:text-4xl font-bold mb-2">Skills &amp; Technologies</h2>
         <p className="text-muted-foreground">
           Technologies I work with to build amazing products
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {skillCategories.map((category) => (
-          <div key={category.name} className="space-y-4">
-            <h3 className="text-xl font-semibold mb-4">{category.name}</h3>
-            <div className="flex flex-wrap gap-2">
-              {category.skills.map((skill) => {
-                const icon = skillIcons[skill];
-                return (
-                  <span
-                    key={skill}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-lg border border-border hover:bg-accent hover:text-accent-foreground hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 cursor-default"
-                  >
-                    {icon}
-                    {skill}
-                  </span>
-                );
-              })}
+      {/* Core expertise */}
+      <div className="mb-10">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="px-3 py-1 text-xs font-semibold tracking-wider uppercase rounded-full bg-primary/10 text-primary border border-primary/20">
+            Core Expertise
+          </span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {coreCategories.map((category) => (
+            <div key={category.name} className="space-y-3">
+              <h3 className="text-base font-semibold text-foreground/80">{category.name}</h3>
+              <div className="flex flex-wrap gap-2">
+                {category.skills.map((skill) => {
+                  const icon = skillIcons[skill];
+                  return (
+                    <span
+                      key={skill}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-lg border border-border hover:bg-primary/10 hover:text-primary hover:border-primary/30 hover:-translate-y-0.5 transition-all duration-200 cursor-default"
+                    >
+                      {icon}
+                      {skill}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+
+      {/* Secondary skills */}
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <span className="px-3 py-1 text-xs font-semibold tracking-wider uppercase rounded-full bg-muted text-muted-foreground border border-border">
+            Tooling &amp; Databases
+          </span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {secondaryCategories.map((category) => (
+            <div key={category.name} className="space-y-3">
+              <h3 className="text-base font-semibold text-foreground/80">{category.name}</h3>
+              <div className="flex flex-wrap gap-2">
+                {category.skills.map((skill) => {
+                  const icon = skillIcons[skill];
+                  return (
+                    <span
+                      key={skill}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm bg-muted/60 text-muted-foreground rounded-lg border border-border/60 hover:bg-secondary hover:text-secondary-foreground hover:-translate-y-0.5 transition-all duration-200 cursor-default"
+                    >
+                      {icon}
+                      {skill}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
