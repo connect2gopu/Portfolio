@@ -1,71 +1,66 @@
 import { BlogPost } from "@/types";
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { formatDate } from "@/lib/utils";
+import { BlogPostImage } from "./BlogPostImage";
 
 interface BlogCardProps {
   post: BlogPost;
+  animationDelay?: number;
 }
 
-export function BlogCard({ post }: BlogCardProps) {
+export function BlogCard({ post, animationDelay = 0 }: BlogCardProps) {
   return (
-    <Link href={`/blog/${post.slug}`}>
-      <Card hover className="h-full flex flex-col">
-        <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted">
-          {post.featuredImage && post.featuredImage.startsWith("/") ? (
-            <Image
-              src={post.featuredImage}
-              alt={post.title}
-              fill
-              className="object-cover"
-            />
-          ) : post.featuredImage ? (
-            <img
-              src={post.featuredImage}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-muted-foreground">No image</span>
-            </div>
-          )}
+    <Link href={`/blog/${post.slug}`} className="animate-fade-in-up" style={{ animationDelay: `${animationDelay}ms` }}>
+      <Card hover className="h-full flex flex-col group">
+        {/* Image — 16:9 aspect ratio */}
+        <div className="relative w-full aspect-video overflow-hidden rounded-t-lg bg-muted">
+          <BlogPostImage
+            src={post.featuredImage}
+            alt={post.title}
+            title={post.title}
+            categories={post.categories}
+          />
           {post.featured && (
-            <div className="absolute top-4 right-4">
-              <span className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded-md">
+            <div className="absolute top-3 right-3">
+              <span className="px-2.5 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full shadow-sm">
                 Featured
               </span>
             </div>
           )}
         </div>
-        <CardHeader>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-            <span>{formatDate(post.publishedDate)}</span>
+
+        <CardHeader className="pb-2">
+          {/* Metadata row */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/80 mb-2.5">
+            <span className="font-medium">{formatDate(post.publishedDate)}</span>
             {post.readingTime && (
               <>
-                <span>•</span>
+                <span aria-hidden>•</span>
                 <span>{post.readingTime} min read</span>
               </>
             )}
           </div>
-          <CardTitle className="line-clamp-2">{post.title}</CardTitle>
-          <CardDescription className="line-clamp-2">
+          <CardTitle className="line-clamp-2 text-lg leading-snug group-hover:text-primary transition-colors duration-200">
+            {post.title}
+          </CardTitle>
+          <CardDescription className="line-clamp-2 leading-relaxed">
             {post.description}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex-1">
-          <div className="flex flex-wrap gap-2">
+
+        <CardContent className="flex-1 pb-4">
+          <div className="flex flex-wrap gap-1.5">
             {post.categories.slice(0, 2).map((category) => (
               <span
                 key={category}
-                className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-md"
+                className="px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors duration-150 cursor-pointer"
               >
                 {category}
               </span>
             ))}
             {post.categories.length > 2 && (
-              <span className="px-2 py-1 text-xs text-muted-foreground">
+              <span className="px-2.5 py-0.5 text-xs text-muted-foreground border border-border rounded-full">
                 +{post.categories.length - 2} more
               </span>
             )}

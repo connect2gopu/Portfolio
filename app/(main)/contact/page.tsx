@@ -1,4 +1,5 @@
 import { ContactForm } from "@/components/forms/ContactForm";
+import { CopyEmailButton } from "@/components/contact/CopyEmailButton";
 import { generateSEO } from "@/lib/seo";
 import { Metadata } from "next";
 
@@ -42,12 +43,15 @@ export default function ContactPage() {
             <div className="space-y-4 text-muted-foreground">
               <div>
                 <p className="font-medium text-foreground mb-1">Email</p>
-                <a
-                  href="mailto:connect2gopu@gmail.com"
-                  className="hover:text-primary transition-colors"
-                >
-                  connect2gopu@gmail.com
-                </a>
+                <div className="flex items-center gap-1 flex-wrap">
+                  <a
+                    href="mailto:connect2gopu@gmail.com"
+                    className="hover:text-primary transition-colors"
+                  >
+                    connect2gopu@gmail.com
+                  </a>
+                  <CopyEmailButton email="connect2gopu@gmail.com" />
+                </div>
               </div>
             </div>
           </div>

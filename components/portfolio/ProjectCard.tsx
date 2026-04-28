@@ -30,6 +30,28 @@ const TECH_COLORS: Record<string, string> = {
   "Firebase": "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
+const TECH_DESCRIPTIONS: Record<string, string> = {
+  "React": "UI component library",
+  "React.js": "UI component library",
+  "Next.js": "SSR & file-based routing",
+  "TypeScript": "Type-safe JavaScript",
+  "JavaScript": "Dynamic web scripting",
+  "Node.js": "Server-side JS runtime",
+  "Express": "RESTful API server",
+  "Express.js": "RESTful API server",
+  "MongoDB": "NoSQL document database",
+  "PostgreSQL": "Relational SQL database",
+  "MySQL": "Relational SQL database",
+  "Redis": "In-memory caching layer",
+  "GraphQL": "Flexible API query language",
+  "AWS": "Cloud infrastructure",
+  "Docker": "Container orchestration",
+  "TailwindCSS": "Utility-first CSS styling",
+  "Redux": "Global state management",
+  "Python": "Backend scripting & data",
+  "Firebase": "Real-time DB & auth",
+};
+
 function getTechColor(tech: string): string {
   return TECH_COLORS[tech] ?? "bg-primary/10 text-primary";
 }
@@ -91,12 +113,22 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <CardContent className="flex-1 pb-3">
         <div className="flex flex-wrap gap-1.5">
           {project.technologies.slice(0, 5).map((tech) => (
-            <span
-              key={tech}
-              className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${getTechColor(tech)}`}
-            >
-              {tech}
-            </span>
+            <div key={tech} className="relative group/tooltip">
+              <span
+                className={`px-2.5 py-0.5 text-xs font-medium rounded-full cursor-default ${getTechColor(tech)}`}
+              >
+                {tech}
+              </span>
+              {TECH_DESCRIPTIONS[tech] && (
+                <div
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 text-xs rounded-md bg-foreground text-background whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200 pointer-events-none z-20 shadow-lg"
+                  role="tooltip"
+                >
+                  {TECH_DESCRIPTIONS[tech]}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+                </div>
+              )}
+            </div>
           ))}
           {project.technologies.length > 5 && (
             <span className="px-2.5 py-0.5 text-xs text-muted-foreground border border-border rounded-full">
