@@ -29,16 +29,19 @@ export function Navigation() {
             key={link.href}
             href={link.href}
             className={cn(
-              "text-sm font-medium transition-colors relative pb-0.5",
+              "text-sm font-medium transition-colors relative pb-1 group",
               isActive
                 ? "text-primary font-semibold"
                 : "text-foreground/60 hover:text-primary"
             )}
           >
             {link.label}
-            {isActive && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-            )}
+            <span
+              className={cn(
+                "absolute bottom-0 left-0 h-0.5 bg-primary rounded-full transition-all duration-300 ease-out",
+                isActive ? "w-full" : "w-0 group-hover:w-full"
+              )}
+            />
           </Link>
         );
       })}
