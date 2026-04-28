@@ -79,23 +79,41 @@ function ProjectPlaceholder({ title, category }: { title: string; category?: str
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card hover className="flex flex-col h-full">
-      <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted">
+      <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-muted group/img">
         {project.featuredImage && project.featuredImage.startsWith("/") ? (
           <Image
             src={project.featuredImage}
             alt={project.title}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover/img:scale-105"
           />
         ) : project.featuredImage ? (
           <img
             src={project.featuredImage}
             alt={project.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105"
           />
         ) : (
           <ProjectPlaceholder title={project.title} category={project.category} />
         )}
+
+        {/* Tech stack overlay on hover */}
+        <div className="absolute inset-0 bg-foreground/75 dark:bg-background/80 flex flex-wrap content-center items-center justify-center gap-1.5 p-4 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300">
+          {project.technologies.slice(0, 6).map((tech) => (
+            <span
+              key={tech}
+              className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${getTechColor(tech)}`}
+            >
+              {tech}
+            </span>
+          ))}
+          {project.technologies.length > 6 && (
+            <span className="px-2.5 py-0.5 text-xs text-white/80 border border-white/30 rounded-full">
+              +{project.technologies.length - 6} more
+            </span>
+          )}
+        </div>
+
         {project.featured && (
           <div className="absolute top-3 right-3">
             <span className="px-2 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full shadow-sm">

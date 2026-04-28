@@ -44,7 +44,7 @@ body {
   color: hsl(var(--foreground));
   background: hsl(var(--background));
   font-family: var(--font-sans);
-  transition: background-color 0.2s ease, color 0.15s ease;
+  transition: background-color 0.3s ease, color 0.2s ease;
 }
 
 @layer utilities {
