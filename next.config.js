@@ -8,6 +8,7 @@ const nextConfig = {
   },
   experimental: {
     mdxRs: false,
+    serverComponentsExternalPackages: ['tinacms'],
   },
   // Enable static exports if needed
   // output: 'export',
