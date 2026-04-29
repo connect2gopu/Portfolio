@@ -5,22 +5,44 @@ import matter from "gray-matter";
 import readingTime from "reading-time";
 
 const blogDirectory = path.join(process.cwd(), "content/blog");
+const postsDirectory = path.join(process.cwd(), "content/posts");
 
 export function getBlogSlugs(): string[] {
-  if (!fs.existsSync(blogDirectory)) {
-    return [];
+  const slugs: string[] = [];
+
+  if (fs.existsSync(blogDirectory)) {
+    fs.readdirSync(blogDirectory)
+      .filter((file) => file.endsWith(".mdx"))
+      .forEach((file) => slugs.push(file.replace(/\.mdx$/, "")));
   }
-  return fs.readdirSync(blogDirectory)
-    .filter((file) => file.endsWith(".mdx"))
-    .map((file) => file.replace(/\.mdx$/, ""));
+
+  if (fs.existsSync(postsDirectory)) {
+    fs.readdirSync(postsDirectory)
+      .filter((file) => file.endsWith(".md"))
+      .forEach((file) => {
+        const slug = file.replace(/\.md$/, "");
+        if (!slugs.includes(slug)) slugs.push(slug);
+      });
+  }
+
+  return slugs;
 }
 
 export function getBlogPostBySlug(slug: string): BlogPost | null {
   try {
-    const fullPath = path.join(blogDirectory, `${slug}.mdx`);
-    if (!fs.existsSync(fullPath)) {
+    // Try content/blog/*.mdx first
+    const mdxPath = path.join(blogDirectory, `${slug}.mdx`);
+    const mdPath = path.join(postsDirectory, `${slug}.md`);
+
+    let fullPath: string;
+    if (fs.existsSync(mdxPath)) {
+      fullPath = mdxPath;
+    } else if (fs.existsSync(mdPath)) {
+      fullPath = mdPath;
+    } else {
       return null;
     }
+
     const fileContents = fs.readFileSync(fullPath, "utf8");
     const { data, content } = matter(fileContents);
     const readingTimeResult = readingTime(content);
@@ -37,6 +59,9 @@ export function getBlogPostBySlug(slug: string): BlogPost | null {
       featuredImage: data.featuredImage || "",
       content,
       readingTime: Math.ceil(readingTimeResult.minutes),
+      draft: data.draft || false,
+      devtoUrl: data.devtoUrl || "",
+      mediumUrl: data.mediumUrl || "",
     };
   } catch (error) {
     console.error(`Error reading blog post ${slug}:`, error);
@@ -45,10 +70,12 @@ export function getBlogPostBySlug(slug: string): BlogPost | null {
 }
 
 export function getAllBlogPosts(): BlogPost[] {
+  const isDev = process.env.NODE_ENV === "development";
   const slugs = getBlogSlugs();
   const posts = slugs
     .map((slug) => getBlogPostBySlug(slug))
     .filter((post): post is BlogPost => post !== null)
+    .filter((post) => isDev || !post.draft)
     .sort((a, b) => {
       const dateA = new Date(a.publishedDate).getTime();
       const dateB = new Date(b.publishedDate).getTime();

@@ -178,6 +178,24 @@ export default defineConfig({
             required: true,
           },
           {
+            type: "boolean",
+            name: "draft",
+            label: "Draft",
+            required: false,
+          },
+          {
+            type: "string",
+            name: "devtoUrl",
+            label: "Dev.to URL",
+            required: false,
+          },
+          {
+            type: "string",
+            name: "mediumUrl",
+            label: "Medium URL",
+            required: false,
+          },
+          {
             type: "rich-text",
             name: "body",
             label: "Body",

@@ -25,6 +25,9 @@ export interface BlogPost {
   featuredImage: string;
   content: string;
   readingTime?: number;
+  draft?: boolean;
+  devtoUrl?: string;
+  mediumUrl?: string;
 }
 
 export interface Category {
