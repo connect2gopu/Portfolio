@@ -28,25 +28,21 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
-  // Only try TinaCMS locally to enable visual editing.
-  // On Vercel, we want purely static generation from the filesystem.
-  if (process.env.TINA_PUBLIC_IS_LOCAL === "true" || process.env.NODE_ENV === "development") {
-    try {
-      const tinaResult = await client.queries.post({ relativePath: `${params.slug}.md` });
-      const post = tinaResult.data.post;
-      return generateSEO({
-        title: `${post.title} | Blog`,
-        description: post.description ?? "",
-        url: `/blog/${params.slug}`,
-        type: "article",
-        image: post.featuredImage ?? "",
-        publishedTime: post.publishedDate ?? "",
-        author: post.author ?? "",
-        tags: (post.tags?.filter(Boolean) as string[]) ?? [],
-      });
-    } catch {
-      // Fall back to filesystem if Tina fails locally
-    }
+  try {
+    const tinaResult = await client.queries.post({ relativePath: `${params.slug}.md` });
+    const post = tinaResult.data.post;
+    return generateSEO({
+      title: `${post.title} | Blog`,
+      description: post.description ?? "",
+      url: `/blog/${params.slug}`,
+      type: "article",
+      image: post.featuredImage ?? "",
+      publishedTime: post.publishedDate ?? "",
+      author: post.author ?? "",
+      tags: (post.tags?.filter(Boolean) as string[]) ?? [],
+    });
+  } catch {
+    // Fall back to filesystem if Tina Cloud is unavailable
   }
 
   const post = getBlogPostBySlug(params.slug);
@@ -67,14 +63,11 @@ export async function generateMetadata({
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  // Only try TinaCMS locally (enables visual editing in the CMS sidebar)
   let tinaResult: Awaited<ReturnType<typeof client.queries.post>> | null = null;
-  if (process.env.TINA_PUBLIC_IS_LOCAL === "true" || process.env.NODE_ENV === "development") {
-    try {
-      tinaResult = await client.queries.post({ relativePath: `${params.slug}.md` });
-    } catch {
-      // Post not in TinaCMS or GraphQL server not running
-    }
+  try {
+    tinaResult = await client.queries.post({ relativePath: `${params.slug}.md` });
+  } catch {
+    // Fall back to filesystem if Tina Cloud is unavailable
   }
 
   const allPosts = getAllBlogPosts();

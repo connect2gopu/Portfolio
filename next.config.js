@@ -6,9 +6,11 @@ const nextConfig = {
     remotePatterns: [],
     unoptimized: false,
   },
+  // Force Next.js to transpile tinacms packages so ESM/CJS dual-package
+  // exports resolve correctly during SSR and static generation.
+  transpilePackages: ['tinacms', '@tinacms/mdx'],
   experimental: {
     mdxRs: false,
-    serverComponentsExternalPackages: ['tinacms'],
   },
   // Enable static exports if needed
   // output: 'export',
