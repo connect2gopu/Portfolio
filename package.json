@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "TINA_PUBLIC_IS_LOCAL=true tinacms dev -c \"next dev\"",
-    "build": "tinacms build && next build",
+    "build": "sh -c 'set -a && . ./.env.local 2>/dev/null; set +a && tinacms build' && next build",
     "start": "next start",
     "lint": "next lint",
     "dev:tina": "tinacms dev -c \"next dev\"",
@@ -32,7 +32,7 @@
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.4.0",
-    "tinacms": "^1.5.0"
+    "tinacms": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

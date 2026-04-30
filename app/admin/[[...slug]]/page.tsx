@@ -1,8 +1,7 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { TinaAdmin } from "tinacms";
-import config from "@/lib/tina-config";
+export const dynamic = "force-dynamic";
 
 export default function AdminPage() {
-  return <TinaAdmin config={config} />;
+  redirect("/admin/index.html");
 }

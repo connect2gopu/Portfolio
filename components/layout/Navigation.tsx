@@ -23,7 +23,7 @@ export function Navigation() {
   return (
     <nav className="hidden md:flex items-center gap-6">
       {navLinks.map((link) => {
-        const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+        const isActive = pathname === link.href || (link.href !== "/" && !!pathname?.startsWith(link.href));
         return (
           <Link
             key={link.href}
