@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "TINA_PUBLIC_IS_LOCAL=true tinacms dev -c \"next dev\"",
-    "build": "sh -c 'set -a && . ./.env.local 2>/dev/null; set +a && tinacms build 2>&1' && next build",
+    "build": "tinacms build && next build",
     "start": "next start",
     "lint": "next lint",
     "dev:tina": "tinacms dev -c \"next dev\"",
