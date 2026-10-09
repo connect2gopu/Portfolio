@@ -39,7 +39,7 @@ export function ShareItInvite({ room, busy, onCreateRoom }: Props) {
     return () => { disposed = true; };
   }, []);
 
-  const link = selected ? `${selected}/tools/shareit${room ? `?room=${encodeURIComponent(room)}` : ""}` : "";
+  const link = selected ? `${selected}/tools/shareit?mode=automatic${room ? `&room=${encodeURIComponent(room)}` : ""}` : "";
   useEffect(() => { setCopied(false); }, [link]);
 
   const copy = async () => {

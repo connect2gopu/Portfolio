@@ -5,8 +5,10 @@ const globalStore = globalThis as typeof globalThis & { shareitStore?: Map<strin
 const memory = globalStore.shareitStore ??= new Map<string, Entry>();
 
 export async function command(args: (string | number)[]): Promise<any> {
-  const url = process.env.SHAREIT_REDIS_REST_URL;
-  const token = process.env.SHAREIT_REDIS_REST_TOKEN;
+  // Use complete pairs so tokens from different databases are never mixed.
+  const custom = process.env.SHAREIT_REDIS_REST_URL || process.env.SHAREIT_REDIS_REST_TOKEN;
+  const url = custom ? process.env.SHAREIT_REDIS_REST_URL : process.env.UPSTASH_REDIS_REST_URL;
+  const token = custom ? process.env.SHAREIT_REDIS_REST_TOKEN : process.env.UPSTASH_REDIS_REST_TOKEN;
   if (url && token) {
     const response = await fetch(url, {
       method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -18,7 +20,7 @@ export async function command(args: (string | number)[]): Promise<any> {
     return result.result;
   }
   if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
-    throw new Error("ShareIt needs SHAREIT_REDIS_REST_URL and SHAREIT_REDIS_REST_TOKEN configured on the server.");
+    throw new Error("Device discovery is not configured. Add SHAREIT_REDIS_REST_URL and SHAREIT_REDIS_REST_TOKEN (or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN) in your hosting project's environment variables, then redeploy.");
   }
   const now = Date.now();
   for (const [key, entry] of memory) if (entry.expires < now) memory.delete(key);
@@ -26,6 +28,11 @@ export async function command(args: (string | number)[]): Promise<any> {
   const key = String(rawKey);
   const entry = memory.get(key);
   switch (operation) {
+    case "INCR": {
+      const value = Number(entry?.value ?? 0) + 1;
+      memory.set(key, { value, expires: entry?.expires ?? now + 180000 });
+      return value;
+    }
     case "GET": return entry?.value ?? null;
     case "SET": {
       if (rest.includes("NX") && entry) return null;

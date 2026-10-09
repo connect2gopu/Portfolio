@@ -16,26 +16,29 @@ A modern portfolio website with integrated blog functionality built with Next.js
 
 ## ShareIt file sharing
 
-Open `/tools/shareit` on two devices connected to the same Wi-Fi. Give each device a name, select files on either device, and click **Send** beside the receiver. The receiver accepts the request and saves the received files. Keep both pages open throughout the transfer. Up to 100 files and 200 MB combined are supported per transfer; received files are held in memory until the page closes.
+Open `/tools/shareit` on two devices connected to the same Wi-Fi. **Four-digit pairing** is the default: A clicks **Create four-digit code**, B enters those four digits and clicks **Connect with code**, and connection details are exchanged automatically. No return code or physical access to the other device is required. The code expires after three minutes, is restricted to one receiver, and is removed once connected or cancelled. Pairing attempts are rate limited. Files still transfer directly between devices.
 
-The **Connect your other device** panel displays a QR code that can be scanned with the phone's camera or QR scanner, plus a copyable link. In local development it detects the server's private IPv4 addresses and preserves the current protocol and port. Pick the Wi-Fi adapter's address if multiple adapters are listed. **Create private invite** generates a room and includes `?room=...` in the QR/link so the second device automatically joins it. Room changes update both the invite and the browser URL. On hosted deployments the public website URL is used instead of the cloud server's internal IP.
+Four-digit pairing uses the shared signaling store configured below on Vercel; local development uses memory. The four digits are a lookup key, not the complete connection details. Without a configured store in production, select **Manual QR pairing**, which requires no Redis account, signaling service, or additional backend credentials. Its flow is:
 
-For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100` for a different port). This starts Next.js on all interfaces over HTTP, without Tina CMS. Open `/tools/shareit`, then scan its QR code or copy the internal-IP link to the other device. Both devices should use a current browser that supports WebRTC data channels. ShareIt generates cryptographically random device IDs on HTTP LAN pages using `crypto.getRandomValues` when the HTTPS-only `crypto.randomUUID` API is unavailable. Allow the server port through the computer's firewall. For self-hosted production, `SHAREIT_ALLOW_LAN_LINKS=true` enables server LAN-address suggestions; it is disabled by default and always disabled on Vercel.
+1. On device A, enter its name and click **Create pairing QR**.
+2. On device B, scan A's QR with the phone camera to open the page and import the connection details. Alternatively, use **Scan QR**, upload a QR image, or paste the pairing link in ShareIt.
+3. B generates a **response QR**. On A, use **Scan QR** in the original tab to scan B's response. Alternatively, upload its image or paste its response code. A's original tab must stay open because it holds the pending connection.
+4. Once connected, either device can select files and click **Send files**. The receiver accepts or declines. The connection stays open for subsequent transfers in either direction.
 
-For optional local HTTPS, run `npm run dev:lan:https`. The certificate must cover the selected LAN IP and be trusted on both devices. You can supply your own LAN certificate with `--experimental-https-key /path/to/key.pem --experimental-https-cert /path/to/cert.pem`. Public deployments should use HTTPS to protect the site and signaling traffic.
+Both the offer and response must be exchanged: one scan alone cannot establish a serverless WebRTC connection. All local ICE candidates are collected before generating the compressed pairing QR. The offer link carries its payload in the URL fragment, which is not sent to the hosting server. The response is a code to import into A's existing tab, not a link that opens a new tab. Pairing expires after three minutes. Files travel through an encrypted direct WebRTC data channel, with no TURN relay or server upload.
 
-File bytes use an encrypted, direct WebRTC data channel with no TURN relay or server upload. The site only handles presence and WebRTC signaling. Automatic discovery on Vercel groups devices by public IP; this is an approximation of network membership, not Wi-Fi scanning. Shared carrier IPs may show unrelated devices, while VPNs and IPv6 can hide devices on the same Wi-Fi. Use a random private room code on both devices when needed. Room codes do not bypass router isolation or firewalls. Discovery and loading the site require connectivity to the hosting server.
+Keep both pages open. Up to 100 files and 200 MB combined are supported per transfer. Received files are held in browser memory, so save them before refreshing or closing the page. Guest Wi-Fi/client isolation and firewalls can prevent direct connections.
 
-For Vercel or any production deployment, configure a Redis service with a REST API compatible with Upstash:
+For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100`). The server listens on all interfaces over HTTP without Tina CMS. Pairing links use the server's private IPv4 address and current port; choose the Wi-Fi address if multiple adapters are listed. HTTP LAN pages support file transfers, QR-image upload, and pasted codes. **Live camera scanning requires HTTPS or localhost**, because browsers restrict camera access. For optional HTTPS, use `npm run dev:lan:https` with a certificate covering the LAN IP and trusted on both devices. Allow the port through the computer's firewall.
+
+**Automatic discovery** remains optional. Locally it uses memory in one server process. On Vercel it groups visitors by their shared public IP; VPNs, IPv6, and shared carrier IPs can affect visibility. Private rooms provide a fallback. Four-digit pairing and automatic discovery in production require an Upstash-compatible Redis REST database:
 
 ```env
 SHAREIT_REDIS_REST_URL=https://your-redis-rest-endpoint
 SHAREIT_REDIS_REST_TOKEN=your-server-only-token
 ```
 
-These credentials must remain server-only. Presence, credentials, and signaling expire automatically. Production intentionally refuses an in-memory fallback because serverless instances do not share memory. Non-Vercel hosting must use private rooms (automatic discovery relies on Vercel's trusted client-IP header).
-
-Local development uses an in-memory store in one Next.js process. The LAN HTTP link is supported for file transfers without requesting camera or microphone access. Browser features such as the modern Clipboard API still require a secure context; ShareIt includes a copy fallback and selectable link for local HTTP. Guest Wi-Fi/client isolation and some browser/network combinations can prevent a direct connection.
+The standard `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` pair is also supported. Use a read/write token and keep credentials server-only. Set the pair in Vercel's environment variables for Production and Preview as needed, then redeploy. The automatic-discovery store expires presence and signaling data. Without Redis, use manual QR mode; code pairing and automatic production discovery intentionally refuse an in-memory fallback across serverless instances. For self-hosted production, `SHAREIT_ALLOW_LAN_LINKS=true` enables server LAN-address suggestions; it is disabled by default and always disabled on Vercel.
 
 ## 🛠️ Tech Stack
 
