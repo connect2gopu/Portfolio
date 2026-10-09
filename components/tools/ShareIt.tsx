@@ -37,17 +37,6 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
   const [room, setRoom] = useState(initialRoom);
   const [generation, setGeneration] = useState(0);
   const [peers, setPeers] = useState<Peer[]>([]);
-  const [discoveryGroup, setDiscoveryGroup] = useState("");
-  const [networkDiagnostic, setNetworkDiagnostic] = useState<{ address: string | null; network: string | null; group: string | null; source?: string; proxyAddress?: string | null; ipSource?: string; warning?: string | null } | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void fetch("/api/shareit/network", { cache: "no-store", signal: controller.signal })
-      .then(response => { if (!response.ok) throw new Error("Network check failed."); return response.json(); })
-      .then(data => setNetworkDiagnostic(data.discovery ?? null))
-      .catch(() => {});
-    return () => controller.abort();
-  }, []);
   const [files, setFiles] = useState<File[]>([]);
   const [online, setOnline] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -57,7 +46,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
   const [progress, setProgress] = useState(0);
   const [downloads, setDownloads] = useState<Download[]>([]);
   const urls = useRef<string[]>([]);
-  const actions = useRef<{ send: (peer: Peer, files: File[]) => Promise<void>; accept: () => Promise<void>; cancel: () => void } | null>(null);
+  const actions = useRef<{ send: (peer: Peer, files: File[]) => Promise<void>; accept: () => Promise<void>; cancel: () => void; refresh: () => void } | null>(null);
 
   useEffect(() => () => { urls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
 
@@ -101,7 +90,6 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
     }
     let disposed = false;
     let joined = false;
-    let paused = false;
     let pc: RTCPeerConnection | null = null;
     let channel: RTCDataChannel | null = null;
     let remote: string | null = null;
@@ -121,7 +109,6 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
     const api = async (action: string, extra = {}) => {
       const response = await fetch("/api/shareit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id, token, room, name: nameRef.current, ...extra }), signal: AbortSignal.timeout(12000) });
       const data = await response.json();
-      if (data.paused) { paused = true; setStatus("Discovery paused"); }
       if (!response.ok) throw new Error(data.error || "Discovery failed.");
       return data;
     };
@@ -259,6 +246,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
       } else if (payload.type === "reject" || payload.type === "cancel") reset(payload.type === "reject" ? "Receiver declined or is busy" : "Transfer cancelled by the other device");
     };
     actions.current = {
+      refresh: () => { void poll(); },
       send: async (peer, selected) => {
         if (remote || !joined || !selected.length) return;
         try {
@@ -272,6 +260,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
           offerSent = true;
           for (const candidate of localCandidates) await signal(peer.id, { type: "candidate", candidate });
           localCandidates = [];
+          void poll();
         } catch (cause) { fail(cause); }
       },
       accept: async () => {
@@ -290,16 +279,19 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
     };
     setOnline(false); setPeers([]); setError(""); setStatus("Joining discovery…");
     let timer: ReturnType<typeof setTimeout>;
+    let polling = false;
     let lastHeartbeat = 0;
     let heartbeatName = "";
     const poll = async () => {
+      if (disposed || polling) return;
+      polling = true; clearTimeout(timer);
       try {
         const heartbeat = !joined || Date.now() - lastHeartbeat >= 30000 || heartbeatName !== nameRef.current;
         const data = await api(joined ? "poll" : "join", { heartbeat });
         if (heartbeat) { lastHeartbeat = Date.now(); heartbeatName = nameRef.current; }
         if (disposed) { await api("leave").catch(() => {}); return; }
         if (!joined) setError("");
-        joined = true; setOnline(true); setPeers(data.peers); setDiscoveryGroup(data.discoveryGroup ?? "");
+        joined = true; setOnline(true); setPeers(data.peers);
         if (!remote) setStatus(previous => previous === "Joining discovery…" ? "Ready to share" : previous);
         for (const message of data.messages) {
           if (!disposed) { try { await handle(message); } catch (cause) { fail(cause); } }
@@ -307,7 +299,10 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
         if (remote && channel?.readyState === "open" && Date.now() - lastActivity > 60000) fail(new Error("Transfer stalled. Please try again."));
       } catch (cause) {
         if (!disposed) { joined = false; setOnline(false); setPeers([]); setError(cause instanceof Error ? cause.message : "Discovery disconnected."); }
-      } finally { if (!disposed && !paused) timer = setTimeout(poll, remote ? 1500 : document.hidden ? 30000 : 8000); }
+      } finally {
+        polling = false;
+        if (!disposed && remote && channel?.readyState !== "open") timer = setTimeout(poll, 5000);
+      }
     };
     void poll();
     return () => {
@@ -347,10 +342,9 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
         </section>
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-lg font-semibold">Available devices <span className="text-muted-foreground">({peers.length})</span></h2>
-          <p className="mt-2 text-sm text-muted-foreground">Choose a device to send your selected files. It can send files back from this same page.</p>
-          {networkDiagnostic && <div className="mt-3 rounded-xl border p-4 text-sm"><p className="font-medium">Network diagnostic (no Redis)</p><p className="mt-2 break-all">Server sees: {networkDiagnostic.address ?? "Unavailable"}</p>{networkDiagnostic.proxyAddress && <p className="break-all">Cloudflare proxy: {networkDiagnostic.proxyAddress}</p>}{networkDiagnostic.warning && <p className="mt-2 text-destructive">{networkDiagnostic.warning}</p>}<p className="break-all">Network: {networkDiagnostic.network ?? "Unavailable"}</p><p>Automatic group: <span className="font-mono">{networkDiagnostic.group ?? "Unavailable"}</span></p><p className="mt-2 text-muted-foreground">{networkDiagnostic.source === "local" ? "Local test: the server sees LAN addresses and uses one development group. This does not show the public addresses Vercel sees. " : ""}Compare these values on both devices. This check runs once when you open automatic discovery.</p></div>}
-          {discoveryGroup && <p className="mt-3 text-xs text-muted-foreground">Discovery group: <span className="font-mono">{discoveryGroup}</span>. Both devices must show the same group to appear here.</p>}
-          {!peers.length && <div className="my-8 rounded-xl bg-secondary p-6 text-center text-sm text-muted-foreground">Waiting for another device…<span className="mt-2 block">Open automatic discovery on both devices. Devices with a shared public IPv4 address or IPv6 subnet appear together. VPNs, privacy services, or a mix of IPv4 and IPv6 can still separate devices.</span><span className="mt-2 block">Use four-digit pairing to connect across these groups, or join the same private room on both devices.</span><button type="button" className={`${button} mt-4`} onClick={onPairWithCode}>Use four-digit pairing</button></div>}
+          <p className="mt-2 text-sm text-muted-foreground">Click Refresh devices to check for devices and incoming requests. Connection setup checks every five seconds; idle pages do not poll.</p>
+          <button className={`${secondary} mt-3`} disabled={busy} onClick={() => actions.current?.refresh()}>Refresh devices</button>
+          {!peers.length && <div className="my-8 rounded-xl bg-secondary p-6 text-center text-sm text-muted-foreground">Waiting for another device…<span className="mt-2 block">Connect both devices to the same Wi-Fi and open automatic discovery on each device.</span><span className="mt-2 block">If your device does not appear, use four-digit pairing or join the same private room.</span><button type="button" className={`${button} mt-4`} onClick={onPairWithCode}>Use four-digit pairing</button></div>}
           <ul className="mt-5 space-y-3">{peers.map(peer => <li key={peer.id} className="flex items-center justify-between gap-3 rounded-xl border p-4"><div className="min-w-0"><p className="truncate font-medium">{peer.name}</p><p className="text-xs text-muted-foreground">Device {peer.id.slice(0, 8)}</p></div><button className={button} disabled={!online || busy || !files.length} onClick={() => void actions.current?.send(peer, files)}>Send</button></li>)}</ul>
           {busy && <div className="mt-6"><progress aria-label="File transfer progress" value={progress} max={100} className="h-3 w-full accent-primary" /><div className="mt-2 flex items-center justify-between"><span className="text-sm">{progress}%</span><button className={secondary} onClick={() => actions.current?.cancel()}>Cancel transfer</button></div></div>}
         </section>

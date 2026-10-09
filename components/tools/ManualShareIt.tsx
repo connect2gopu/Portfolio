@@ -23,7 +23,6 @@ function releaseCode(session: CodeSession) { void codeApi("close", session.token
 export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manual" | "code" }) {
   const codeMode = pairingMode === "code";
   const codeSession = useRef<CodeSession | null>(null);
-  const pollTimer = useRef<ReturnType<typeof setTimeout>>();
   const operation = useRef(0);
   const [pairingCode, setPairingCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
@@ -56,9 +55,9 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
     const client = new ManualPeer({
       status: value => { if (live) {
         setStatus(codeMode ? value.replace("Creating pairing QR…", "Creating pairing code…").replace("Waiting for the receiver’s response QR", "Waiting for the other device to enter your code…").replace("Creating response QR…", "Preparing connection…").replace("Show the response QR to the sender", "Connecting directly…") : value);
-        if (value === "Ready to pair") { setOutput(null); setPairingCode(""); setExpiresAt(0); clearTimeout(pollTimer.current); if (codeSession.current) releaseCode(codeSession.current); codeSession.current = null; }
+        if (value === "Ready to pair") { setOutput(null); setPairingCode(""); setExpiresAt(0); if (codeSession.current) releaseCode(codeSession.current); codeSession.current = null; }
       } },
-      connected: value => { if (live) { setConnected(value); if (value) { setOutput(null); setError(""); setPairingCode(""); setExpiresAt(0); clearTimeout(pollTimer.current); if (codeSession.current) releaseCode(codeSession.current); codeSession.current = null; } } },
+      connected: value => { if (live) { setConnected(value); if (value) { setOutput(null); setError(""); setPairingCode(""); setExpiresAt(0); if (codeSession.current) releaseCode(codeSession.current); codeSession.current = null; } } },
       busy: value => { if (live) setBusy(value); }, incoming: value => { if (live) setIncoming(value); },
       progress: value => { if (live) setProgress(value); }, error: value => { if (live) setError(value); },
       file: (fileName, blob) => { if (live) { const url = URL.createObjectURL(blob); urls.current.push(url); setDownloads(previous => [...previous, { name: fileName, size: blob.size, url }]); } },
@@ -77,7 +76,7 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
       finally { if (live) setPairBusy(false); }
     };
     if (!codeMode) { void consumeHash(); window.addEventListener("hashchange", consumeHash); }
-    return () => { live = false; operations.current++; clearTimeout(pollTimer.current); if (codeSession.current) releaseCode(codeSession.current); codeSession.current = null; window.removeEventListener("hashchange", consumeHash); client.close(); if (peer.current === client) peer.current = null; };
+    return () => { live = false; operations.current++; if (codeSession.current) releaseCode(codeSession.current); codeSession.current = null; window.removeEventListener("hashchange", consumeHash); client.close(); if (peer.current === client) peer.current = null; };
   }, [codeMode]);
   useEffect(() => () => { urls.current.forEach(url => URL.revokeObjectURL(url)); }, []);
   useEffect(() => {
@@ -113,18 +112,22 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
       const session = { code: result.code as string, token };
       if (operation.current !== current || peer.current !== client) { releaseCode(session); return; }
       codeSession.current = session; setPairingCode(session.code); setExpiresAt(result.expiresAt); setNow(Date.now());
-      const poll = async () => {
-        if (operation.current !== current || codeSession.current !== session) return;
-        try {
-          const data = await codeApi("poll", token, { code: session.code });
-          if (operation.current !== current || codeSession.current !== session) return;
-          if (data.answer) { await client.import(data.answer, nameRef.current); setPeerName(data.answer.name || "Other device"); return; }
-          pollTimer.current = setTimeout(poll, document.hidden ? 10000 : 4000);
-        } catch (cause) { if (operation.current === current) { client.close(); setError(cause instanceof Error ? cause.message : "Pairing failed."); } }
-      };
-      void poll();
+
     } catch (cause) { if (operation.current === current && peer.current === client) { client.close(); setError(cause instanceof Error ? cause.message : "Pairing failed."); } }
     finally { if (operation.current === current && peer.current === client) setPairBusy(false); }
+  };
+  const checkConnection = async () => {
+    const client = peer.current, session = codeSession.current;
+    if (!client || !session || pairBusy || connected) return;
+    const current = operation.current;
+    setPairBusy(true); setError("");
+    try {
+      const data = await codeApi("poll", session.token, { code: session.code });
+      if (operation.current !== current || codeSession.current !== session) return;
+      if (data.answer) { await client.import(data.answer, nameRef.current); setPeerName(data.answer.name || "Other device"); }
+      else setStatus("No response yet. Ask the other device to enter the code, then check again.");
+    } catch (cause) { if (operation.current === current) setError(cause instanceof Error ? cause.message : "Connection check failed."); }
+    finally { if (operation.current === current) setPairBusy(false); }
   };
   const joinPairingCode = async () => {
     const client = peer.current; if (!client || !/^\d{4}$/.test(joinCode)) return;
@@ -140,7 +143,7 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
       if (operation.current !== current || peer.current !== client) { releaseCode(session); return; }
       codeSession.current = session; setExpiresAt(result.expiresAt); setNow(Date.now()); setPeerName(result.offer.name || "Other device");
       await codeApi("answer", token, { code: session.code, answer });
-      if (operation.current === current && codeSession.current === session) setStatus("Connecting directly…");
+      if (operation.current === current && codeSession.current === session) setStatus("Response sent. Click Check connection on the device that created the code.");
     } catch (cause) { if (claimed) releaseCode(claimed); if (operation.current === current && peer.current === client) { client.close(); setError(cause instanceof Error ? cause.message : "Pairing failed."); } }
     finally { if (operation.current === current && peer.current === client) setPairBusy(false); }
   };
@@ -176,7 +179,7 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
   return <div className="container mx-auto max-w-5xl px-4 pb-16">
     <h1 className="text-4xl font-bold tracking-tight">ShareIt</h1>
     <p className="mt-4 max-w-3xl text-muted-foreground">{codeMode ? "Create a four-digit code on one device and enter it on the other. Keep both pages open on the same Wi-Fi." : "Pair two devices on the same Wi-Fi using QR codes. No Redis account or discovery service is needed. Keep both pages open."}</p>
-    {codeMode ? <ol className="my-6 grid gap-3 text-sm sm:grid-cols-3"><li className="rounded-xl bg-secondary p-4"><strong>1.</strong> Create a pairing code.</li><li className="rounded-xl bg-secondary p-4"><strong>2.</strong> Enter the four digits on the other device.</li><li className="rounded-xl bg-secondary p-4"><strong>3.</strong> Connect and send files in either direction.</li></ol> : <ol className="my-6 grid gap-3 text-sm sm:grid-cols-3">
+    {codeMode ? <ol className="my-6 grid gap-3 text-sm sm:grid-cols-3"><li className="rounded-xl bg-secondary p-4"><strong>1.</strong> Create a pairing code.</li><li className="rounded-xl bg-secondary p-4"><strong>2.</strong> Enter the four digits on the other device.</li><li className="rounded-xl bg-secondary p-4"><strong>3.</strong> On the first device, click Check connection, then share files.</li></ol> : <ol className="my-6 grid gap-3 text-sm sm:grid-cols-3">
       <li className="rounded-xl bg-secondary p-4"><strong>1. Device A:</strong> Create a pairing QR.</li>
       <li className="rounded-xl bg-secondary p-4"><strong>2. Device B:</strong> Scan A’s QR. B generates a response QR.</li>
       <li className="rounded-xl bg-secondary p-4"><strong>3. Device A:</strong> Scan B’s response in this original tab. Both devices can then send files.</li>
@@ -209,7 +212,7 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
       <section className="min-w-0 rounded-2xl border bg-card p-6">
         {!connected ? codeMode ? <>
           <h2 className="text-lg font-semibold">Your pairing code</h2>
-          {pairingCode ? <><p aria-label="Four-digit pairing code" className="my-6 break-all text-center font-mono text-4xl font-bold tracking-[0.2em]">{pairingCode}</p><p className="text-sm text-muted-foreground">Enter these four digits on the other device. This code works once and expires in {Math.max(0, Math.ceil((expiresAt - now) / 1000))} seconds.</p></> : <p className="mt-5 text-sm text-muted-foreground">Create a code here, or enter the code shown on the other device. Connection details are exchanged automatically—no response code is needed.</p>}
+          {pairingCode ? <><p aria-label="Four-digit pairing code" className="my-6 break-all text-center font-mono text-4xl font-bold tracking-[0.2em]">{pairingCode}</p><p className="text-sm text-muted-foreground">Enter these four digits on the other device. Then click Check connection here. This code works once and expires in {Math.max(0, Math.ceil((expiresAt - now) / 1000))} seconds.</p><button className={`${button} mt-4`} disabled={pairBusy || busy} onClick={() => void checkConnection()}>Check connection</button></> : <p className="mt-5 text-sm text-muted-foreground">Create a code here, or enter the code shown on the other device. Connection details are exchanged automatically—no response code is needed.</p>}
         </> : <>
           <h2 className="text-lg font-semibold">{output?.type === "answer" ? "Response QR for device A" : "Pairing QR for device B"}</h2>
           {!output && <p className="mt-5 text-sm text-muted-foreground">Create a QR on A, or scan it on B. A response scan back to A is required because there is no server exchanging connection details.</p>}

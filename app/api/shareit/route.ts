@@ -1,7 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { command } from "@/lib/shareit/store";
-import { SHAREIT_PAUSED, SHAREIT_PAUSE_MESSAGE } from "@/lib/shareit/availability";
 import { discoveryNetwork, shareItClientAddress } from "@/lib/shareit/network";
 
 export const runtime = "nodejs";
@@ -10,7 +9,6 @@ const hash = (value: string) => createHash("sha256").update(value).digest("hex")
 const validId = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9-]{36}$/.test(value);
 
 export async function POST(request: NextRequest) {
-  if (SHAREIT_PAUSED) return NextResponse.json({ paused: true, error: SHAREIT_PAUSE_MESSAGE }, { status: 503, headers: { "Cache-Control": "no-store" } });
   try {
     const origin = request.headers.get("origin");
     if (origin && new URL(origin).host !== request.headers.get("host")) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
     const credentials = JSON.stringify({ token: hash(body.token), scope });
     let existing = await command(["GET", key]);
     if (!existing && body.action === "join") {
-      const created = await command(["SET", key, credentials, "EX", 120, "NX"]);
+      const created = await command(["SET", key, credentials, "EX", 600, "NX"]);
       existing = created ? credentials : await command(["GET", key]);
     }
     if (typeof existing !== "string" || existing.length !== credentials.length || !timingSafeEqual(Buffer.from(existing), Buffer.from(credentials))) {
@@ -57,21 +55,21 @@ export async function POST(request: NextRequest) {
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "Device";
     const heartbeat = body.action === "join" || body.heartbeat === true;
     if (heartbeat) {
-      await command(["EXPIRE", key, 120]);
+      await command(["EXPIRE", key, 600]);
       await command(["HSET", peersKey, body.id, JSON.stringify({ id: body.id, name: name || "Device", seen: Date.now() })]);
-      await command(["EXPIRE", peersKey, 150]);
+      await command(["EXPIRE", peersKey, 660]);
     }
     const entries: string[] = await command(["HGETALL", peersKey]);
     const peers = [];
     for (let i = 0; i < entries.length; i += 2) {
       const peer = JSON.parse(entries[i + 1]);
-      if (Date.now() - peer.seen > 90000) {
+      if (Date.now() - peer.seen > 600000) {
         if (heartbeat) await command(["HDEL", peersKey, entries[i]]);
       }
       else if (peer.id !== body.id) peers.push({ id: peer.id, name: peer.name });
     }
     const messages: string[] = await command(["LPOP", queueKey, 50]) ?? [];
-    return NextResponse.json({ peers, messages: messages.map(value => JSON.parse(value)), discoveryGroup: scope.slice(0, 12) }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ peers, messages: messages.map(value => JSON.parse(value)) }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof SyntaxError ? "Invalid request." : error instanceof Error ? error.message : "Discovery unavailable." }, { status: error instanceof SyntaxError ? 400 : 503 });
   }
