@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 // import { ShareItInvite } from "./ShareItInvite";
 import { ManualShareIt } from "./ManualShareIt";
 import { createDeviceId } from "@/lib/shareit/device-id";
+import { shareItRtcConfiguration } from "@/lib/shareit/rtc-config";
 
 type Peer = { id: string; name: string };
 type FileInfo = { name: string; size: number; type: string };
@@ -97,7 +98,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
     let pending: Incoming | null = null;
     let candidates: RTCIceCandidateInit[] = [];
     let localCandidates: RTCIceCandidateInit[] = [];
-    let offerSent = false;
+    let descriptionSent = false;
     let outgoing: File[] = [];
     let manifest: FileInfo[] = [];
     let index = 0;
@@ -121,7 +122,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
       pending = null;
       candidates = [];
       localCandidates = [];
-      offerSent = false;
+      descriptionSent = false;
       outgoing = [];
       manifest = [];
       parts = [];
@@ -205,14 +206,13 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
       };
     };
     const createConnection = (to: string) => {
-      // No STUN/TURN: collect local candidates and never relay file bytes.
-      const connection = new RTCPeerConnection({ iceServers: [] });
+      const connection = new RTCPeerConnection(shareItRtcConfiguration());
       pc = connection;
       connection.onicecandidate = event => {
         if (!event.candidate || pc !== connection) return;
         const candidate = event.candidate.toJSON();
-        // Publish the offer first so a receiver never drops early ICE candidates.
-        if (outgoing.length && !offerSent) localCandidates.push(candidate);
+        // Publish either description before its trickled candidates.
+        if (!descriptionSent) localCandidates.push(candidate);
         else void signal(to, { type: "candidate", candidate }).catch(fail);
       };
       connection.onconnectionstatechange = () => { if (pc === connection && connection.connectionState === "failed") fail(new Error("Could not connect directly. Check Wi-Fi client isolation or try another browser.")); };
@@ -222,6 +222,16 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
     const flushCandidates = async (connection: RTCPeerConnection) => {
       for (const candidate of candidates) await connection.addIceCandidate(candidate);
       candidates = [];
+    };
+    const publishDescription = async (connection: RTCPeerConnection, to: string, payload: Signal) => {
+      await signal(to, payload);
+      if (pc !== connection) return;
+      // Keep buffering while the queued candidates are being published.
+      while (localCandidates.length && pc === connection) {
+        const candidate = localCandidates.shift()!;
+        await signal(to, { type: "candidate", candidate });
+      }
+      if (pc === connection) descriptionSent = true;
     };
     const handle = async ({ from, signal: payload }: { from: string; signal: Signal }) => {
       if (payload.type === "offer") {
@@ -257,19 +267,19 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
           const connection = createConnection(peer.id);
           attach(connection.createDataChannel("files", { ordered: true }));
           await connection.setLocalDescription(await connection.createOffer());
-          await signal(peer.id, { type: "offer", description: connection.localDescription!.toJSON(), files: selected.map(file => ({ name: file.name, size: file.size, type: file.type })) });
-          offerSent = true;
-          for (const candidate of localCandidates) await signal(peer.id, { type: "candidate", candidate });
-          localCandidates = [];
+          await publishDescription(connection, peer.id, { type: "offer", description: connection.localDescription!.toJSON(), files: selected.map(file => ({ name: file.name, size: file.size, type: file.type })) });
           void poll();
         } catch (cause) { fail(cause); }
       },
       accept: async () => {
         if (!pc || !pending || !remote) return;
+        const connection = pc;
+        const to = remote;
         try {
           setIncoming(null); pending = null; setStatus("Connecting directly…");
-          await pc.setLocalDescription(await pc.createAnswer());
-          await signal(remote, { type: "answer", description: pc.localDescription!.toJSON() });
+          await connection.setLocalDescription(await connection.createAnswer());
+          if (pc !== connection) return;
+          await publishDescription(connection, to, { type: "answer", description: connection.localDescription!.toJSON() });
         } catch (cause) { fail(cause); }
       },
       cancel: () => {

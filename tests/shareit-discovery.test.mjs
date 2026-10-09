@@ -12,9 +12,10 @@ test('an idle receiver polls for offers, shows approval, and stops on unmount', 
   let incoming = [];
   const description = { type: 'offer', sdp: 'test offer' };
   const remoteDescriptions = [];
+  const refs = [];
   const react = {
     useEffect: effect => effects.push(effect),
-    useRef: current => ({ current }),
+    useRef: current => { const ref = { current }; refs.push(ref); return ref; },
     useState: initial => [initial, value => states.push(value)],
   };
   const jsx = (type, props) => ({ type, props });
@@ -28,9 +29,16 @@ test('an idle receiver polls for offers, shows approval, and stops on unmount', 
     './ShareItInvite': { ShareItInvite() {} },
     './ManualShareIt': { ManualShareIt() {} },
     '@/lib/shareit/device-id': { createDeviceId: () => '11111111-1111-1111-1111-111111111111' },
+    '@/lib/shareit/rtc-config': { shareItRtcConfiguration: () => ({ iceServers: [{ urls: ['stun:example.com'] }] }) },
   };
   class Connection {
-    async setRemoteDescription(value) { remoteDescriptions.push(value); }
+    constructor(config) { assert.equal(config.iceServers[0].urls[0], 'stun:example.com'); }
+    async setRemoteDescription(value) { this.remoteDescription = value; remoteDescriptions.push(value); }
+    async createAnswer() { return { type: 'answer', sdp: 'test answer' }; }
+    async setLocalDescription(value) {
+      this.localDescription = { toJSON: () => value };
+      this.onicecandidate({ candidate: { toJSON: () => ({ candidate: 'early receiver candidate' }) } });
+    }
     close() {}
   }
   const window = { RTCPeerConnection: Connection, location: { href: 'https://example.com/shareit' }, history: { replaceState() {} } };
@@ -63,6 +71,11 @@ test('an idle receiver polls for offers, shows approval, and stops on unmount', 
   assert.ok(states.includes('Incoming files — waiting for your approval'));
   assert.ok(states.some(value => value?.from === 'sender' && value.files[0].name === 'hello.txt'));
   assert.deepEqual(remoteDescriptions, [description]);
+  const actions = refs.find(ref => ref.current?.accept);
+  await actions.current.accept();
+  const signals = requests.filter(request => request.action === 'signal');
+  assert.deepEqual(signals.map(request => request.signal.type), ['answer', 'candidate']);
+  assert.equal(signals[1].signal.candidate.candidate, 'early receiver candidate');
   cleanup();
   assert.equal(timers.size, 0);
   assert.equal(requests.at(-1).action, 'leave');

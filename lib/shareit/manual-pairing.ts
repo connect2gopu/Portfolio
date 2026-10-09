@@ -1,5 +1,6 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from "fflate";
 import { createDeviceId } from "./device-id";
+import { shareItRtcConfiguration } from "./rtc-config";
 
 export type PairingCode = { v: 1; session: string; type: "offer" | "answer"; sdp: string; name: string };
 export type FileInfo = { name: string; size: number };
@@ -86,7 +87,7 @@ export class ManualPeer {
   }
   private connection() {
     if (typeof RTCPeerConnection !== "function") throw new Error("This browser does not support WebRTC. Open ShareIt in Chrome, Safari, Firefox, or Edge.");
-    const pc = new RTCPeerConnection({ iceServers: [] });
+    const pc = new RTCPeerConnection(shareItRtcConfiguration());
     this.pc = pc;
     pc.ondatachannel = event => { if (this.pc === pc) this.attach(event.channel); };
     pc.onconnectionstatechange = () => {
