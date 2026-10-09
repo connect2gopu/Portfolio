@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { command } from "@/lib/shareit/store";
+import { discoveryNetwork } from "@/lib/shareit/network";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,8 +19,9 @@ export async function POST(request: NextRequest) {
     const room = typeof body.room === "string" ? body.room.trim().toLowerCase() : "";
     if (room && !/^[a-z0-9-]{8,64}$/.test(room)) return NextResponse.json({ error: "Room codes need 8–64 letters, numbers or hyphens." }, { status: 400 });
     const ip = process.env.VERCEL ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() : process.env.NODE_ENV === "development" ? "local-development" : undefined;
-    if (!room && !ip) return NextResponse.json({ error: "Automatic discovery is unavailable here. Use a private room code." }, { status: 400 });
-    const scope = hash(room ? `room:${room}` : `network:${ip}`);
+    const network = ip === "local-development" ? ip : ip ? discoveryNetwork(ip) : null;
+    if (!room && !network) return NextResponse.json({ error: "Automatic discovery is unavailable here. Use a private room code." }, { status: 400 });
+    const scope = hash(room ? `room:${room}` : `network:${network}`);
     const key = `shareit:device:${body.id}`;
     const credentials = JSON.stringify({ token: hash(body.token), scope });
     let existing = await command(["GET", key]);
