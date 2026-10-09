@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "TINA_PUBLIC_IS_LOCAL=true tinacms dev -c \"next dev\"",
+    "dev:lan": "next dev --hostname 0.0.0.0",
+    "dev:lan:https": "next dev --hostname 0.0.0.0 --experimental-https",
     "build": "tinacms build && next build",
     "start": "next start",
     "lint": "next lint",
@@ -23,6 +25,7 @@
     "next": "^14.2.0",
     "next-mdx-remote": "^6.0.0",
     "next-seo": "^6.6.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",

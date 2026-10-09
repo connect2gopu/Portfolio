@@ -14,6 +14,7 @@ const navLinks: NavLink[] = [
   { href: "/about", label: "About" },
   { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
+  { href: "/tools/shareit", label: "ShareIt" },
   { href: "/contact", label: "Contact" },
 ];
 

@@ -50,7 +50,7 @@ export function Header() {
       <div
         className={cn(
           "md:hidden border-t bg-background transition-all duration-300 ease-in-out",
-          mobileMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+          mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
         )}
       >
         <nav className="container px-4 py-4 flex flex-col gap-4">
@@ -88,6 +88,9 @@ export function Header() {
             className="text-sm font-medium hover:text-primary transition-colors py-2"
           >
             Contact
+          </Link>
+          <Link href="/tools/shareit" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium hover:text-primary transition-colors py-2">
+            ShareIt
           </Link>
         </nav>
       </div>

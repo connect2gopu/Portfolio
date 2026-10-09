@@ -14,6 +14,29 @@ A modern portfolio website with integrated blog functionality built with Next.js
 - **RSS Feed**: Blog RSS feed at `/api/rss`
 - **Tina CMS**: Content management for projects and blog posts
 
+## ShareIt file sharing
+
+Open `/tools/shareit` on two devices connected to the same Wi-Fi. Give each device a name, select files on either device, and click **Send** beside the receiver. The receiver accepts the request and saves the received files. Keep both pages open throughout the transfer. Up to 100 files and 200 MB combined are supported per transfer; received files are held in memory until the page closes.
+
+The **Connect your other device** panel displays a QR code that can be scanned with the phone's camera or QR scanner, plus a copyable link. In local development it detects the server's private IPv4 addresses and preserves the current protocol and port. Pick the Wi-Fi adapter's address if multiple adapters are listed. **Create private invite** generates a room and includes `?room=...` in the QR/link so the second device automatically joins it. Room changes update both the invite and the browser URL. On hosted deployments the public website URL is used instead of the cloud server's internal IP.
+
+For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100` for a different port). This starts Next.js on all interfaces over HTTP, without Tina CMS. Open `/tools/shareit`, then scan its QR code or copy the internal-IP link to the other device. Both devices should use a current browser that supports WebRTC data channels. ShareIt generates cryptographically random device IDs on HTTP LAN pages using `crypto.getRandomValues` when the HTTPS-only `crypto.randomUUID` API is unavailable. Allow the server port through the computer's firewall. For self-hosted production, `SHAREIT_ALLOW_LAN_LINKS=true` enables server LAN-address suggestions; it is disabled by default and always disabled on Vercel.
+
+For optional local HTTPS, run `npm run dev:lan:https`. The certificate must cover the selected LAN IP and be trusted on both devices. You can supply your own LAN certificate with `--experimental-https-key /path/to/key.pem --experimental-https-cert /path/to/cert.pem`. Public deployments should use HTTPS to protect the site and signaling traffic.
+
+File bytes use an encrypted, direct WebRTC data channel with no TURN relay or server upload. The site only handles presence and WebRTC signaling. Automatic discovery on Vercel groups devices by public IP; this is an approximation of network membership, not Wi-Fi scanning. Shared carrier IPs may show unrelated devices, while VPNs and IPv6 can hide devices on the same Wi-Fi. Use a random private room code on both devices when needed. Room codes do not bypass router isolation or firewalls. Discovery and loading the site require connectivity to the hosting server.
+
+For Vercel or any production deployment, configure a Redis service with a REST API compatible with Upstash:
+
+```env
+SHAREIT_REDIS_REST_URL=https://your-redis-rest-endpoint
+SHAREIT_REDIS_REST_TOKEN=your-server-only-token
+```
+
+These credentials must remain server-only. Presence, credentials, and signaling expire automatically. Production intentionally refuses an in-memory fallback because serverless instances do not share memory. Non-Vercel hosting must use private rooms (automatic discovery relies on Vercel's trusted client-IP header).
+
+Local development uses an in-memory store in one Next.js process. The LAN HTTP link is supported for file transfers without requesting camera or microphone access. Browser features such as the modern Clipboard API still require a secure context; ShareIt includes a copy fallback and selectable link for local HTTP. Guest Wi-Fi/client isolation and some browser/network combinations can prevent a direct connection.
+
 ## 🛠️ Tech Stack
 
 - **Next.js 14** - React framework with App Router
