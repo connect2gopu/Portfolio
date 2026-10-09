@@ -16,7 +16,7 @@ A modern portfolio website with integrated blog functionality built with Next.js
 
 ## ShareIt file sharing
 
-Open `/tools/shareit` on two devices connected to the same Wi-Fi. **Four-digit pairing** is the default: A clicks **Create four-digit code**, B enters those four digits and clicks **Connect with code**, and connection details are exchanged automatically. No return code or physical access to the other device is required. The code expires after three minutes, is restricted to one receiver, and is removed once connected or cancelled. Pairing attempts are rate limited. Files still transfer directly between devices.
+Open `/tools/shareit` on two devices connected to the same Wi-Fi. **Automatic discovery** is the default: nearby devices appear automatically, and you can select files and send them to another device. If a device does not appear, join the same private room on both devices. Four-digit pairing is hidden from the page but remains accessible at `/tools/shareit?mode=code`.
 
 Pairing and automatic discovery use **Upstash Redis** on Vercel. Redis stores temporary device presence and connection details; file bytes travel through an encrypted direct WebRTC data channel and are never uploaded to Redis or the site's server. There is no return QR/code exchange in this setup.
 
@@ -24,7 +24,7 @@ Keep both pages open. Up to 100 files and 200 MB combined are supported per tran
 
 For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100`). The server listens on all interfaces over HTTP without Tina CMS. When Redis credentials are unset, local development uses an in-memory store in one server process. Automatic-discovery invite links use the server's private IPv4 address and current port; choose the Wi-Fi address if multiple adapters are listed. HTTP LAN pages support file transfers. For optional HTTPS, use `npm run dev:lan:https` with a certificate covering the LAN IP and trusted on both devices. Allow the port through the computer's firewall.
 
-**Automatic discovery** remains optional. Locally it uses memory in one server process. On Vercel it groups visitors by their shared public IP; VPNs, IPv6, and shared carrier IPs can affect visibility. Private rooms provide a fallback. Four-digit pairing and automatic discovery in production require an Upstash-compatible Redis REST database:
+**Automatic discovery** runs when you open ShareIt. Locally it uses memory in one server process. On Vercel it groups visitors by their shared public IP; VPNs, IPv6, and shared carrier IPs can affect visibility. Private rooms provide a fallback. Four-digit pairing and automatic discovery in production require an Upstash-compatible Redis REST database:
 
 ```env
 UPSTASH_REDIS_REST_URL=https://your-redis-rest-endpoint

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ShareItInvite } from "./ShareItInvite";
+// IP address and QR invite UI is temporarily hidden.
+// import { ShareItInvite } from "./ShareItInvite";
 import { ManualShareIt } from "./ManualShareIt";
 import { createDeviceId } from "@/lib/shareit/device-id";
 
@@ -15,7 +16,7 @@ const size = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? 
 const button = "rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-40 hover:opacity-90 transition";
 const secondary = "rounded-xl border px-4 py-2 text-sm hover:bg-secondary disabled:opacity-40";
 
-export function ShareIt({ initialRoom = "", initialMode = "code" }: { initialRoom?: string; initialMode?: "automatic" | "code" }) {
+export function ShareIt({ initialRoom = "", initialMode = "automatic" }: { initialRoom?: string; initialMode?: "automatic" | "code" }) {
   const [mode, setMode] = useState(initialMode);
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -24,12 +25,12 @@ export function ShareIt({ initialRoom = "", initialMode = "code" }: { initialRoo
     window.history.replaceState(window.history.state, "", url.toString());
   }, [mode]);
   return <>
-    <div className="container mx-auto max-w-5xl px-4 pt-10 pb-6"><div className="flex flex-wrap gap-3" aria-label="Pairing method"><button aria-pressed={mode === "code"} className={mode === "code" ? button : secondary} onClick={() => setMode("code")}>Four-digit pairing</button><button aria-pressed={mode === "automatic"} className={mode === "automatic" ? button : secondary} onClick={() => setMode("automatic")}>Automatic discovery</button></div></div>
-    {mode === "automatic" ? <AutomaticShareIt initialRoom={initialRoom} onPairWithCode={() => setMode("code")} /> : <ManualShareIt pairingMode="code" />}
+    <div className="container mx-auto max-w-5xl px-4 pt-10 pb-6"><div className="flex flex-wrap gap-3" aria-label="Pairing method"><button aria-pressed={mode === "automatic"} className={mode === "automatic" ? button : secondary} onClick={() => setMode("automatic")}>Automatic discovery</button></div></div>
+    {mode === "automatic" ? <AutomaticShareIt initialRoom={initialRoom} /> : <ManualShareIt pairingMode="code" />}
   </>;
 }
 
-function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: string; onPairWithCode: () => void }) {
+function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
   const [name, setName] = useState("My device");
   const nameRef = useRef(name);
   nameRef.current = name;
@@ -301,7 +302,8 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
         if (!disposed) { joined = false; setOnline(false); setPeers([]); setError(cause instanceof Error ? cause.message : "Discovery disconnected."); }
       } finally {
         polling = false;
-        if (!disposed && remote && channel?.readyState !== "open") timer = setTimeout(poll, 5000);
+        // Idle receivers must keep checking for offers and refreshing presence.
+        if (!disposed) timer = setTimeout(poll, 5000);
       }
     };
     void poll();
@@ -324,12 +326,25 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
         <span className="text-xs text-muted-foreground">{room ? `Room: ${room}` : "Automatic network discovery"}</span>
       </div>
       {error && <p role="alert" className="mb-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm">{error}</p>}
+      {/* IP details and QR invite are temporarily hidden.
       <ShareItInvite room={room} busy={busy} onCreateRoom={createRoom} />
-      <div className="grid gap-6 md:grid-cols-2">
+      */}
+      <section className="mb-6 rounded-2xl border bg-card p-5 sm:p-6" aria-labelledby="your-device-title">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="13" rx="2" /><path d="M8 21h8M12 16v5" /></svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 id="your-device-title" className="text-lg font-semibold">Your device</h2>
+            <label htmlFor="device-name" className="mt-1 block text-xs text-muted-foreground">Name visible to your group</label>
+            <input id="device-name" maxLength={40} value={name} onChange={event => setName(event.target.value)} className="mt-2 w-full max-w-sm rounded-xl border bg-background px-3 py-2 text-sm" />
+          </div>
+          <span className="rounded-full bg-secondary px-3 py-2 text-xs">{online ? "Visible to your group" : "Connecting…"}</span>
+        </div>
+      </section>
+      <div className="grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
         <section className="rounded-2xl border bg-card p-6">
-          <h2 className="text-lg font-semibold">Your device</h2>
-          <label htmlFor="device-name" className="mb-2 mt-5 block text-sm">Name visible to other devices</label>
-          <input id="device-name" maxLength={40} value={name} onChange={event => setName(event.target.value)} className="w-full rounded-xl border bg-background px-4 py-3" />
+          <h2 className="text-lg font-semibold">Choose files</h2>
           <label htmlFor="share-files" className="mb-2 mt-6 block text-sm">Files to share</label>
           <input id="share-files" type="file" multiple disabled={busy} onChange={event => {
             const selected = Array.from(event.target.files ?? []);
@@ -341,11 +356,23 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
           {!!files.length && <p className="mt-4 text-sm font-medium">{files.length} file{files.length !== 1 ? "s" : ""} · {size(total)}</p>}
         </section>
         <section className="rounded-2xl border bg-card p-6">
-          <h2 className="text-lg font-semibold">Available devices <span className="text-muted-foreground">({peers.length})</span></h2>
-          <p className="mt-2 text-sm text-muted-foreground">Click Refresh devices to check for devices and incoming requests. Connection setup checks every five seconds; idle pages do not poll.</p>
-          <button className={`${secondary} mt-3`} disabled={busy} onClick={() => actions.current?.refresh()}>Refresh devices</button>
-          {!peers.length && <div className="my-8 rounded-xl bg-secondary p-6 text-center text-sm text-muted-foreground">Waiting for another device…<span className="mt-2 block">Connect both devices to the same Wi-Fi and open automatic discovery on each device.</span><span className="mt-2 block">If your device does not appear, use four-digit pairing or join the same private room.</span><button type="button" className={`${button} mt-4`} onClick={onPairWithCode}>Use four-digit pairing</button></div>}
-          <ul className="mt-5 space-y-3">{peers.map(peer => <li key={peer.id} className="flex items-center justify-between gap-3 rounded-xl border p-4"><div className="min-w-0"><p className="truncate font-medium">{peer.name}</p><p className="text-xs text-muted-foreground">Device {peer.id.slice(0, 8)}</p></div><button className={button} disabled={!online || busy || !files.length} onClick={() => void actions.current?.send(peer, files)}>Send</button></li>)}</ul>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><h2 className="text-lg font-semibold">Devices in your group <span className="text-muted-foreground">({peers.length})</span></h2><p className="mt-1 text-xs text-muted-foreground">{online ? "Scanning every five seconds" : "Waiting for discovery"}</p></div>
+            <button className={secondary} disabled={busy} onClick={() => actions.current?.refresh()}>Scan now</button>
+          </div>
+          <div className="relative mt-5 overflow-hidden rounded-2xl border bg-primary/5">
+            <svg aria-hidden="true" viewBox="0 0 400 400" className="pointer-events-none absolute inset-0 h-full w-full text-primary/20" preserveAspectRatio="xMidYMid slice">
+              <circle cx="200" cy="200" r="60" fill="none" stroke="currentColor" /><circle cx="200" cy="200" r="120" fill="none" stroke="currentColor" /><circle cx="200" cy="200" r="180" fill="none" stroke="currentColor" />
+              <path d="M200 0v400M0 200h400" stroke="currentColor" />
+              <g className={online ? "origin-center motion-safe:animate-spin" : ""} style={{ animationDuration: "12s" }}><path d="M200 200L200 20A180 180 0 0 1 327 73Z" fill="currentColor" opacity="0.45" /><path d="M200 200V20" stroke="currentColor" strokeWidth="2" /></g>
+            </svg>
+            <div className="relative flex min-h-[320px] flex-col items-center justify-center p-5">
+              <div className="mb-5 flex flex-col items-center gap-2"><span className="flex h-12 w-12 items-center justify-center rounded-full border border-primary/30 bg-background text-primary"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="3" width="16" height="12" rx="2" /><path d="M8 21h8M12 15v6" /></svg></span><span className="max-w-[180px] truncate rounded-full bg-background/90 px-3 py-1 text-xs font-medium">{name || "My device"} · You</span></div>
+              {!peers.length && <div role="status" className="max-w-xs rounded-xl bg-background/90 p-4 text-center text-sm"><p className="font-medium">{online ? "Looking for devices…" : "Connecting to your group…"}</p><p className="mt-2 text-xs text-muted-foreground">Open ShareIt on another device connected to the same Wi-Fi.</p></div>}
+              <ul aria-label="Discovered devices" className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">{peers.map(peer => <li key={peer.id}><button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-background/95 p-4 text-left shadow-sm transition hover:border-primary hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60" disabled={!online || busy || !files.length} onClick={() => void actions.current?.send(peer, files)} aria-label={`Send selected files to ${peer.name}`}><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="6" y="2" width="12" height="20" rx="3" /><path d="M10 18h4" /></svg></span><span className="min-w-0"><span className="block truncate text-sm font-semibold">{peer.name}</span><span className="block text-xs text-muted-foreground">{busy ? "Transfer in progress" : files.length ? "Tap to send files" : "Choose files to send"}</span></span></button></li>)}</ul>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">Devices appear as they join your group. The radar shows discovery, not physical distance.</p>
           {busy && <div className="mt-6"><progress aria-label="File transfer progress" value={progress} max={100} className="h-3 w-full accent-primary" /><div className="mt-2 flex items-center justify-between"><span className="text-sm">{progress}%</span><button className={secondary} onClick={() => actions.current?.cancel()}>Cancel transfer</button></div></div>}
         </section>
       </div>
