@@ -47,6 +47,13 @@ test('diagnostic works independently of Redis and calculates the discovery group
     assert.notEqual(a.group, c.group);
     assert.equal(a.network, 'ipv6:2001:0db8:0001:0002/64');
     assert.equal(a.address, '2001:db8:1:2::1');
+    const throughCloudflare = async edge => (await (await route.GET(new Request('https://example.com/api/shareit/network', { headers: { 'x-forwarded-for': edge, 'cf-connecting-ip': '103.70.200.54' } }))).json()).discovery;
+    const edgeA = await throughCloudflare('162.158.22.54');
+    const edgeB = await throughCloudflare('172.71.8.144');
+    assert.equal(edgeA.address, '103.70.200.54');
+    assert.equal(edgeB.address, '103.70.200.54');
+    assert.equal(edgeA.group, edgeB.group);
+    assert.equal(edgeA.ipSource, 'cloudflare');
   } finally {
     if (previous === undefined) delete process.env.VERCEL;
     else process.env.VERCEL = previous;

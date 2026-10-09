@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { command } from "@/lib/shareit/store";
 import { SHAREIT_PAUSED, SHAREIT_PAUSE_MESSAGE } from "@/lib/shareit/availability";
-import { discoveryNetwork } from "@/lib/shareit/network";
+import { discoveryNetwork, shareItClientAddress } from "@/lib/shareit/network";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!validId(body.id) || !validId(body.token)) return NextResponse.json({ error: "Invalid device credentials." }, { status: 400 });
     const room = typeof body.room === "string" ? body.room.trim().toLowerCase() : "";
     if (room && !/^[a-z0-9-]{8,64}$/.test(room)) return NextResponse.json({ error: "Room codes need 8–64 letters, numbers or hyphens." }, { status: 400 });
-    const ip = process.env.VERCEL ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() : process.env.NODE_ENV === "development" ? "local-development" : undefined;
+    const ip = process.env.VERCEL ? shareItClientAddress(request.headers).address : process.env.NODE_ENV === "development" ? "local-development" : undefined;
     const network = ip === "local-development" ? ip : ip ? discoveryNetwork(ip) : null;
     if (!room && !network) return NextResponse.json({ error: "Automatic discovery is unavailable here. Use a private room code." }, { status: 400 });
     const scope = hash(room ? `room:${room}` : `network:${network}`);

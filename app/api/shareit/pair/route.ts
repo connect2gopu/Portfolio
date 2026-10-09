@@ -2,6 +2,7 @@ import { createHash, randomInt } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { command } from "@/lib/shareit/store";
 import { SHAREIT_PAUSED, SHAREIT_PAUSE_MESSAGE } from "@/lib/shareit/availability";
+import { shareItClientAddress } from "@/lib/shareit/network";
 import type { PairingCode } from "@/lib/shareit/manual-pairing";
 
 export const runtime = "nodejs";
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     if (!["create", "join", "answer", "poll", "close"].includes(body.action)) return reply({ error: "Invalid action." }, 400);
     const token = hash(body.token);
     if (body.action === "create" || body.action === "join") {
-      const ip = process.env.VERCEL ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() : request.headers.get("host");
+      const ip = process.env.VERCEL ? shareItClientAddress(request.headers).address : request.headers.get("host");
       const rateKey = `shareit:pair-rate:${hash(ip || "unknown")}:${body.action}:${Math.floor(Date.now() / 180000)}`;
       const attempts = await command(["INCR", rateKey]);
       if (attempts === 1) await command(["EXPIRE", rateKey, TTL]);

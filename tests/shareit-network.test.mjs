@@ -22,3 +22,31 @@ test('IPv4 mapped notation matches plain IPv4 without combining unrelated addres
 test('invalid and scoped addresses cannot create a shared fallback group', () => {
   for (const address of ['', 'unknown', '203.0.113.999', '2001:::1', 'fe80::1%en0']) assert.equal(discoveryNetwork(address), null);
 });
+
+test('Cloudflare edges recover the same visitor address and discovery network', async () => {
+  const { shareItClientAddress } = await import('../lib/shareit/network.ts');
+  const clients = ['162.158.22.54', '172.71.8.144', '2606:4700::1'].map(edge => shareItClientAddress(new Headers({ 'x-forwarded-for': edge, 'cf-connecting-ip': '103.70.200.54' }), true));
+  for (const client of clients) {
+    assert.equal(client.address, '103.70.200.54');
+    assert.equal(client.ipSource, 'cloudflare');
+    assert.equal(discoveryNetwork(client.address), 'ipv4:103.70.200.54');
+  }
+});
+test('direct requests cannot spoof the Cloudflare visitor header', async () => {
+  const { shareItClientAddress } = await import('../lib/shareit/network.ts');
+  const client = shareItClientAddress(new Headers({ 'x-forwarded-for': '203.0.113.1', 'cf-connecting-ip': '103.70.200.54' }), true);
+  assert.equal(client.address, '203.0.113.1');
+});
+test('Cloudflare requests without a valid visitor IP do not group by proxy IP', async () => {
+  const { shareItClientAddress } = await import('../lib/shareit/network.ts');
+  for (const visitor of ['', 'garbage', '103.70.200.54, 1.2.3.4']) {
+    const client = shareItClientAddress(new Headers({ 'x-forwarded-for': '162.158.22.54', 'cf-connecting-ip': visitor }), true);
+    assert.equal(client.address, null);
+    assert(client.warning);
+  }
+});
+test('platform forwarded address takes priority over another forwarded header', async () => {
+  const { shareItClientAddress } = await import('../lib/shareit/network.ts');
+  const client = shareItClientAddress(new Headers({ 'x-vercel-forwarded-for': '203.0.113.1', 'x-forwarded-for': '162.158.22.54', 'cf-connecting-ip': '103.70.200.54' }), true);
+  assert.equal(client.address, '203.0.113.1');
+});
