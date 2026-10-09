@@ -6,21 +6,29 @@ const memory = globalStore.shareitStore ??= new Map<string, Entry>();
 
 export async function command(args: (string | number)[]): Promise<any> {
   // Use complete pairs so tokens from different databases are never mixed.
-  const custom = process.env.SHAREIT_REDIS_REST_URL || process.env.SHAREIT_REDIS_REST_TOKEN;
-  const url = custom ? process.env.SHAREIT_REDIS_REST_URL : process.env.UPSTASH_REDIS_REST_URL;
-  const token = custom ? process.env.SHAREIT_REDIS_REST_TOKEN : process.env.UPSTASH_REDIS_REST_TOKEN;
+  const standardUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const standardToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  const standard = standardUrl || standardToken;
+  const url = standard ? standardUrl : process.env.SHAREIT_REDIS_REST_URL?.trim();
+  const token = standard ? standardToken : process.env.SHAREIT_REDIS_REST_TOKEN?.trim();
+  if ((url || token) && !(url && token)) {
+    throw new Error("Upstash configuration is incomplete. Set both UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN from the same database, then redeploy.");
+  }
   if (url && token) {
+    try { if (new URL(url).protocol !== "https:") throw new Error(); }
+    catch { throw new Error("UPSTASH_REDIS_REST_URL must be the HTTPS REST endpoint from Upstash, not a redis:// connection string."); }
     const response = await fetch(url, {
       method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify(args), cache: "no-store", signal: AbortSignal.timeout(8000),
     });
-    if (!response.ok) throw new Error("Discovery service unavailable.");
+    if (response.status === 401 || response.status === 403) throw new Error("Upstash authentication failed. Check the REST token and use a read/write token from the same database as the REST URL.");
+    if (!response.ok) throw new Error("Upstash pairing service is temporarily unavailable. Please try again.");
     const result = await response.json();
-    if (result.error) throw new Error("Discovery service unavailable.");
+    if (result.error) throw new Error("Upstash could not complete the pairing request. Check that the REST token allows both reads and writes.");
     return result.result;
   }
   if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
-    throw new Error("Device discovery is not configured. Add SHAREIT_REDIS_REST_URL and SHAREIT_REDIS_REST_TOKEN (or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN) in your hosting project's environment variables, then redeploy.");
+    throw new Error("Pairing is not configured. Add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel → Settings → Environment Variables, then redeploy.");
   }
   const now = Date.now();
   for (const [key, entry] of memory) if (entry.expires < now) memory.delete(key);

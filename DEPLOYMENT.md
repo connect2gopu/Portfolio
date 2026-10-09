@@ -76,14 +76,14 @@ CONTACT_EMAIL=your-email@example.com
 
 ### 2.4 Deploy
 
-**ShareIt manual QR pairing works without Redis.** For four-digit pairing or automatic discovery, create an Upstash Redis database and add its REST endpoint and read/write token to **Settings → Environment Variables**:
+**For ShareIt**, create an Upstash Redis database and add its REST endpoint and read/write token to **Settings → Environment Variables**:
 
 ```env
-SHAREIT_REDIS_REST_URL=https://your-redis-rest-endpoint
-SHAREIT_REDIS_REST_TOKEN=your-server-only-token
+UPSTASH_REDIS_REST_URL=https://your-redis-rest-endpoint
+UPSTASH_REDIS_REST_TOKEN=your-server-only-token
 ```
 
-The standard `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` pair also works. Enable the variables for Production and any Preview deployments that need ShareIt. Redeploy after adding or changing them. These are server credentials; do not use `NEXT_PUBLIC_` names. Without a shared store, serverless instances cannot discover each other's devices.
+Copy both values from the same database in Upstash **Connect → REST**. Use the read/write token, not the read-only token. The older `SHAREIT_REDIS_REST_URL` / `SHAREIT_REDIS_REST_TOKEN` names are still accepted; the standard Upstash pair takes precedence. Enable the variables for Production and any Preview deployments that need ShareIt. Redeploy after adding or changing them. These are server credentials; do not use `NEXT_PUBLIC_` names. Without a shared store, serverless instances cannot discover each other's devices.
 
 1. Click **"Deploy"**
 2. Wait for the build to complete (usually 2-3 minutes)

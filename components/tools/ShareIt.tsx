@@ -15,7 +15,7 @@ const size = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? 
 const button = "rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-40 hover:opacity-90 transition";
 const secondary = "rounded-xl border px-4 py-2 text-sm hover:bg-secondary disabled:opacity-40";
 
-export function ShareIt({ initialRoom = "", initialMode = "code" }: { initialRoom?: string; initialMode?: "manual" | "automatic" | "code" }) {
+export function ShareIt({ initialRoom = "", initialMode = "code" }: { initialRoom?: string; initialMode?: "automatic" | "code" }) {
   const [mode, setMode] = useState(initialMode);
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -24,8 +24,8 @@ export function ShareIt({ initialRoom = "", initialMode = "code" }: { initialRoo
     window.history.replaceState(window.history.state, "", url.toString());
   }, [mode]);
   return <>
-    <div className="container mx-auto max-w-5xl px-4 pt-10 pb-6"><div className="flex flex-wrap gap-3" aria-label="Pairing method"><button aria-pressed={mode === "code"} className={mode === "code" ? button : secondary} onClick={() => setMode("code")}>Four-digit pairing</button><button aria-pressed={mode === "manual"} className={mode === "manual" ? button : secondary} onClick={() => setMode("manual")}>Manual QR pairing</button><button aria-pressed={mode === "automatic"} className={mode === "automatic" ? button : secondary} onClick={() => setMode("automatic")}>Automatic discovery</button></div></div>
-    {mode === "automatic" ? <AutomaticShareIt initialRoom={initialRoom} /> : <ManualShareIt key={mode} pairingMode={mode} />}
+    <div className="container mx-auto max-w-5xl px-4 pt-10 pb-6"><div className="flex flex-wrap gap-3" aria-label="Pairing method"><button aria-pressed={mode === "code"} className={mode === "code" ? button : secondary} onClick={() => setMode("code")}>Four-digit pairing</button><button aria-pressed={mode === "automatic"} className={mode === "automatic" ? button : secondary} onClick={() => setMode("automatic")}>Automatic discovery</button></div></div>
+    {mode === "automatic" ? <AutomaticShareIt initialRoom={initialRoom} /> : <ManualShareIt pairingMode="code" />}
   </>;
 }
 

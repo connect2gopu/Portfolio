@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 export default function ShareItPage({ searchParams }: { searchParams: { room?: string | string[]; mode?: string | string[] } }) {
   const value = typeof searchParams.room === "string" ? searchParams.room.trim().toLowerCase() : "";
   const initialRoom = /^[a-z0-9-]{8,64}$/.test(value) ? value : "";
-  const initialMode = searchParams.mode === "manual" ? "manual" : searchParams.mode === "automatic" || initialRoom ? "automatic" : "code";
+  const initialMode = searchParams.mode === "automatic" || initialRoom ? "automatic" : "code";
   return <ShareIt initialRoom={initialRoom} initialMode={initialMode} />;
 }

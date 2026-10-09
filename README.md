@@ -18,27 +18,22 @@ A modern portfolio website with integrated blog functionality built with Next.js
 
 Open `/tools/shareit` on two devices connected to the same Wi-Fi. **Four-digit pairing** is the default: A clicks **Create four-digit code**, B enters those four digits and clicks **Connect with code**, and connection details are exchanged automatically. No return code or physical access to the other device is required. The code expires after three minutes, is restricted to one receiver, and is removed once connected or cancelled. Pairing attempts are rate limited. Files still transfer directly between devices.
 
-Four-digit pairing uses the shared signaling store configured below on Vercel; local development uses memory. The four digits are a lookup key, not the complete connection details. Without a configured store in production, select **Manual QR pairing**, which requires no Redis account, signaling service, or additional backend credentials. Its flow is:
-
-1. On device A, enter its name and click **Create pairing QR**.
-2. On device B, scan A's QR with the phone camera to open the page and import the connection details. Alternatively, use **Scan QR**, upload a QR image, or paste the pairing link in ShareIt.
-3. B generates a **response QR**. On A, use **Scan QR** in the original tab to scan B's response. Alternatively, upload its image or paste its response code. A's original tab must stay open because it holds the pending connection.
-4. Once connected, either device can select files and click **Send files**. The receiver accepts or declines. The connection stays open for subsequent transfers in either direction.
-
-Both the offer and response must be exchanged: one scan alone cannot establish a serverless WebRTC connection. All local ICE candidates are collected before generating the compressed pairing QR. The offer link carries its payload in the URL fragment, which is not sent to the hosting server. The response is a code to import into A's existing tab, not a link that opens a new tab. Pairing expires after three minutes. Files travel through an encrypted direct WebRTC data channel, with no TURN relay or server upload.
+Pairing and automatic discovery use **Upstash Redis** on Vercel. Redis stores temporary device presence and connection details; file bytes travel through an encrypted direct WebRTC data channel and are never uploaded to Redis or the site's server. There is no return QR/code exchange in this setup.
 
 Keep both pages open. Up to 100 files and 200 MB combined are supported per transfer. Received files are held in browser memory, so save them before refreshing or closing the page. Guest Wi-Fi/client isolation and firewalls can prevent direct connections.
 
-For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100`). The server listens on all interfaces over HTTP without Tina CMS. Pairing links use the server's private IPv4 address and current port; choose the Wi-Fi address if multiple adapters are listed. HTTP LAN pages support file transfers, QR-image upload, and pasted codes. **Live camera scanning requires HTTPS or localhost**, because browsers restrict camera access. For optional HTTPS, use `npm run dev:lan:https` with a certificate covering the LAN IP and trusted on both devices. Allow the port through the computer's firewall.
+For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100`). The server listens on all interfaces over HTTP without Tina CMS. When Redis credentials are unset, local development uses an in-memory store in one server process. Automatic-discovery invite links use the server's private IPv4 address and current port; choose the Wi-Fi address if multiple adapters are listed. HTTP LAN pages support file transfers. For optional HTTPS, use `npm run dev:lan:https` with a certificate covering the LAN IP and trusted on both devices. Allow the port through the computer's firewall.
 
 **Automatic discovery** remains optional. Locally it uses memory in one server process. On Vercel it groups visitors by their shared public IP; VPNs, IPv6, and shared carrier IPs can affect visibility. Private rooms provide a fallback. Four-digit pairing and automatic discovery in production require an Upstash-compatible Redis REST database:
 
 ```env
-SHAREIT_REDIS_REST_URL=https://your-redis-rest-endpoint
-SHAREIT_REDIS_REST_TOKEN=your-server-only-token
+UPSTASH_REDIS_REST_URL=https://your-redis-rest-endpoint
+UPSTASH_REDIS_REST_TOKEN=your-server-only-token
 ```
 
-The standard `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` pair is also supported. Use a read/write token and keep credentials server-only. Set the pair in Vercel's environment variables for Production and Preview as needed, then redeploy. The automatic-discovery store expires presence and signaling data. Without Redis, use manual QR mode; code pairing and automatic production discovery intentionally refuse an in-memory fallback across serverless instances. For self-hosted production, `SHAREIT_ALLOW_LAN_LINKS=true` enables server LAN-address suggestions; it is disabled by default and always disabled on Vercel.
+Create an Upstash Redis database and open its **Connect → REST** section. Copy the HTTPS REST URL and **read/write** token from the same database. In Vercel, open the project's **Settings → Environment Variables**, add the pair above for **Production** (and **Preview** if needed), then redeploy. No additional ShareIt variables, client SDK, or database schema are required. Never prefix these credentials with `NEXT_PUBLIC_`.
+
+The older `SHAREIT_REDIS_REST_URL` / `SHAREIT_REDIS_REST_TOKEN` pair remains supported. The standard Upstash pair takes precedence; never mix values from different databases. Missing production credentials, incomplete pairs, non-HTTPS REST endpoints, and authentication failures produce actionable errors. Presence and signaling data expire automatically. In production the store must be shared across serverless instances; it intentionally does not fall back to memory. For self-hosted production, `SHAREIT_ALLOW_LAN_LINKS=true` enables LAN-address suggestions; it is disabled by default and always disabled on Vercel.
 
 ## 🛠️ Tech Stack
 
