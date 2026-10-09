@@ -39,17 +39,19 @@ export async function POST(request: NextRequest) {
     }
     if (typeof body.code !== "string" || !/^\d{4}$/.test(body.code)) return reply({ error: "Enter a four-digit pairing code." }, 400);
     const key = `shareit:pair:${body.code}`;
-    const stored = await command(["GET", key]);
+    const answerKey = `${key}:answer`;
+    const [stored, pendingAnswer] = body.action === "poll"
+      ? await command(["MGET", key, answerKey])
+      : [await command(["GET", key]), null];
     if (!stored) return reply({ error: "Code not found or expired. Ask the other device to create a new code." }, 404);
     const record = JSON.parse(stored);
     if (record.expiresAt <= Date.now()) return reply({ error: "Pairing code expired. Create a new code." }, 410);
     const claimKey = `${key}:claim`;
-    const answerKey = `${key}:answer`;
     if (body.action === "join") {
       if (token === record.token) return reply({ error: "Enter this code on the other device." }, 400);
       const remaining = Math.max(1, Math.ceil((record.expiresAt - Date.now()) / 1000));
-      await command(["SET", claimKey, token, "EX", remaining, "NX"]);
-      if (await command(["GET", claimKey]) !== token) return reply({ error: "This code is already being used by another device. Create a new code." }, 409);
+      const claimed = await command(["SET", claimKey, token, "EX", remaining, "NX"]);
+      if (!claimed && await command(["GET", claimKey]) !== token) return reply({ error: "This code is already being used by another device. Create a new code." }, 409);
       return reply({ offer: record.offer, expiresAt: record.expiresAt });
     }
     if (body.action === "answer") {
@@ -60,11 +62,11 @@ export async function POST(request: NextRequest) {
     }
     if (body.action === "poll") {
       if (token !== record.token) return reply({ error: "Invalid session credentials." }, 403);
-      const answer = await command(["GET", answerKey]);
+      const answer = pendingAnswer;
       return reply({ answer: answer ? JSON.parse(answer) : null, expiresAt: record.expiresAt });
     }
     if (token !== record.token && token !== await command(["GET", claimKey])) return reply({ error: "Invalid session credentials." }, 403);
-    await command(["DEL", answerKey]); await command(["DEL", claimKey]); await command(["DEL", key]);
+    await command(["DEL", answerKey, claimKey, key]);
     return reply({ ok: true });
   } catch (error) {
     return reply({ error: error instanceof SyntaxError ? "Invalid request." : error instanceof Error ? error.message : "Pairing unavailable." }, error instanceof SyntaxError ? 400 : 503);

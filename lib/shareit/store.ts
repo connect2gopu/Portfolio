@@ -42,6 +42,7 @@ export async function command(args: (string | number)[]): Promise<any> {
       return value;
     }
     case "GET": return entry?.value ?? null;
+    case "MGET": return [rawKey, ...rest].map(item => memory.get(String(item))?.value ?? null);
     case "SET": {
       if (rest.includes("NX") && entry) return null;
       const ex = rest.indexOf("EX");
@@ -64,7 +65,7 @@ export async function command(args: (string | number)[]): Promise<any> {
     }
     case "LLEN": return (entry?.value as string[] | undefined)?.length ?? 0;
     case "LPOP": return (entry?.value as string[] | undefined)?.splice(0, Number(rest[0])) ?? [];
-    case "DEL": return memory.delete(key) ? 1 : 0;
+    case "DEL": return [rawKey, ...rest].reduce<number>((count, item) => count + (memory.delete(String(item)) ? 1 : 0), 0);
     default: throw new Error("Unsupported store operation.");
   }
 }

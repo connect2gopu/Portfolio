@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
     const credentials = JSON.stringify({ token: hash(body.token), scope });
     let existing = await command(["GET", key]);
     if (!existing && body.action === "join") {
-      await command(["SET", key, credentials, "EX", 90, "NX"]);
-      existing = await command(["GET", key]);
+      const created = await command(["SET", key, credentials, "EX", 120, "NX"]);
+      existing = created ? credentials : await command(["GET", key]);
     }
     if (typeof existing !== "string" || existing.length !== credentials.length || !timingSafeEqual(Buffer.from(existing), Buffer.from(credentials))) {
       return NextResponse.json({ error: "Session expired. Rejoin discovery." }, { status: 403 });
@@ -34,8 +34,7 @@ export async function POST(request: NextRequest) {
     const queueKey = `shareit:queue:${body.id}`;
     if (body.action === "leave") {
       await command(["HDEL", peersKey, body.id]);
-      await command(["DEL", key]);
-      await command(["DEL", queueKey]);
+      await command(["DEL", key, queueKey]);
       return NextResponse.json({ ok: true });
     }
     if (body.action === "signal") {
@@ -52,18 +51,23 @@ export async function POST(request: NextRequest) {
     }
     if (!["join", "poll"].includes(body.action)) return NextResponse.json({ error: "Invalid action." }, { status: 400 });
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "Device";
-    await command(["EXPIRE", key, 90]);
-    await command(["HSET", peersKey, body.id, JSON.stringify({ id: body.id, name: name || "Device", seen: Date.now() })]);
-    await command(["EXPIRE", peersKey, 120]);
+    const heartbeat = body.action === "join" || body.heartbeat === true;
+    if (heartbeat) {
+      await command(["EXPIRE", key, 120]);
+      await command(["HSET", peersKey, body.id, JSON.stringify({ id: body.id, name: name || "Device", seen: Date.now() })]);
+      await command(["EXPIRE", peersKey, 150]);
+    }
     const entries: string[] = await command(["HGETALL", peersKey]);
     const peers = [];
     for (let i = 0; i < entries.length; i += 2) {
       const peer = JSON.parse(entries[i + 1]);
-      if (Date.now() - peer.seen > 15000) await command(["HDEL", peersKey, entries[i]]);
+      if (Date.now() - peer.seen > 90000) {
+        if (heartbeat) await command(["HDEL", peersKey, entries[i]]);
+      }
       else if (peer.id !== body.id) peers.push({ id: peer.id, name: peer.name });
     }
     const messages: string[] = await command(["LPOP", queueKey, 50]) ?? [];
-    return NextResponse.json({ peers, messages: messages.map(value => JSON.parse(value)) }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ peers, messages: messages.map(value => JSON.parse(value)), discoveryGroup: scope.slice(0, 12) }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof SyntaxError ? "Invalid request." : error instanceof Error ? error.message : "Discovery unavailable." }, { status: error instanceof SyntaxError ? 400 : 503 });
   }

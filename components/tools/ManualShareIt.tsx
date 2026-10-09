@@ -119,7 +119,7 @@ export function ManualShareIt({ pairingMode = "manual" }: { pairingMode?: "manua
           const data = await codeApi("poll", token, { code: session.code });
           if (operation.current !== current || codeSession.current !== session) return;
           if (data.answer) { await client.import(data.answer, nameRef.current); setPeerName(data.answer.name || "Other device"); return; }
-          pollTimer.current = setTimeout(poll, 1500);
+          pollTimer.current = setTimeout(poll, document.hidden ? 10000 : 4000);
         } catch (cause) { if (operation.current === current) { client.close(); setError(cause instanceof Error ? cause.message : "Pairing failed."); } }
       };
       void poll();
