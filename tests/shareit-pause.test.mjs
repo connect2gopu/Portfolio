@@ -12,7 +12,21 @@ function load(path, overrides = {}) {
   new Function('require', 'module', 'exports', source)(name => overrides[name] ?? require(name), module, module.exports);
   return module.exports;
 }
-const availability = load('../lib/shareit/availability.ts');
+const configuredAvailability = load('../lib/shareit/availability.ts');
+const availability = { ...configuredAvailability, SHAREIT_PAUSED: true };
+test('sharing is enabled and both APIs accept requests for validation', async () => {
+  assert.equal(configuredAvailability.SHAREIT_PAUSED, false);
+  for (const path of ['../app/api/shareit/route.ts', '../app/api/shareit/pair/route.ts']) {
+    const route = load(path, {
+      '@/lib/shareit/availability': configuredAvailability,
+      '@/lib/shareit/network': load('../lib/shareit/network.ts'),
+      '@/lib/shareit/store': { command() { throw new Error('Invalid credentials must be rejected before Redis'); } },
+    });
+    const response = await route.POST(new Request('https://example.com/api/shareit', { method: 'POST', body: '{}' }));
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).paused, undefined);
+  }
+});
 test('all discovery and pairing actions are paused before touching Redis', async () => {
   for (const path of ['../app/api/shareit/route.ts', '../app/api/shareit/pair/route.ts']) {
     let commands = 0;
