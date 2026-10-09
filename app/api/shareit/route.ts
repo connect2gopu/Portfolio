@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { command } from "@/lib/shareit/store";
+import { SHAREIT_PAUSED, SHAREIT_PAUSE_MESSAGE } from "@/lib/shareit/availability";
 import { discoveryNetwork } from "@/lib/shareit/network";
 
 export const runtime = "nodejs";
@@ -9,6 +10,7 @@ const hash = (value: string) => createHash("sha256").update(value).digest("hex")
 const validId = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9-]{36}$/.test(value);
 
 export async function POST(request: NextRequest) {
+  if (SHAREIT_PAUSED) return NextResponse.json({ paused: true, error: SHAREIT_PAUSE_MESSAGE }, { status: 503, headers: { "Cache-Control": "no-store" } });
   try {
     const origin = request.headers.get("origin");
     if (origin && new URL(origin).host !== request.headers.get("host")) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });

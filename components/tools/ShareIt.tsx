@@ -38,6 +38,16 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
   const [generation, setGeneration] = useState(0);
   const [peers, setPeers] = useState<Peer[]>([]);
   const [discoveryGroup, setDiscoveryGroup] = useState("");
+  const [networkDiagnostic, setNetworkDiagnostic] = useState<{ address: string | null; network: string | null; group: string | null; source?: string } | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/shareit/network", { cache: "no-store", signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error("Network check failed."); return response.json(); })
+      .then(data => setNetworkDiagnostic(data.discovery ?? null))
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
   const [files, setFiles] = useState<File[]>([]);
   const [online, setOnline] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -91,6 +101,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
     }
     let disposed = false;
     let joined = false;
+    let paused = false;
     let pc: RTCPeerConnection | null = null;
     let channel: RTCDataChannel | null = null;
     let remote: string | null = null;
@@ -110,6 +121,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
     const api = async (action: string, extra = {}) => {
       const response = await fetch("/api/shareit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id, token, room, name: nameRef.current, ...extra }), signal: AbortSignal.timeout(12000) });
       const data = await response.json();
+      if (data.paused) { paused = true; setStatus("Discovery paused"); }
       if (!response.ok) throw new Error(data.error || "Discovery failed.");
       return data;
     };
@@ -295,7 +307,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
         if (remote && channel?.readyState === "open" && Date.now() - lastActivity > 60000) fail(new Error("Transfer stalled. Please try again."));
       } catch (cause) {
         if (!disposed) { joined = false; setOnline(false); setPeers([]); setError(cause instanceof Error ? cause.message : "Discovery disconnected."); }
-      } finally { if (!disposed) timer = setTimeout(poll, remote ? 1500 : document.hidden ? 30000 : 8000); }
+      } finally { if (!disposed && !paused) timer = setTimeout(poll, remote ? 1500 : document.hidden ? 30000 : 8000); }
     };
     void poll();
     return () => {
@@ -336,6 +348,7 @@ function AutomaticShareIt({ initialRoom = "", onPairWithCode }: { initialRoom?: 
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-lg font-semibold">Available devices <span className="text-muted-foreground">({peers.length})</span></h2>
           <p className="mt-2 text-sm text-muted-foreground">Choose a device to send your selected files. It can send files back from this same page.</p>
+          {networkDiagnostic && <div className="mt-3 rounded-xl border p-4 text-sm"><p className="font-medium">Network diagnostic (no Redis)</p><p className="mt-2 break-all">Server sees: {networkDiagnostic.address ?? "Unavailable"}</p><p className="break-all">Network: {networkDiagnostic.network ?? "Unavailable"}</p><p>Automatic group: <span className="font-mono">{networkDiagnostic.group ?? "Unavailable"}</span></p><p className="mt-2 text-muted-foreground">{networkDiagnostic.source === "local" ? "Local test: the server sees LAN addresses and uses one development group. This does not show the public addresses Vercel sees. " : ""}Compare these values on both devices. This check runs once when you open automatic discovery.</p></div>}
           {discoveryGroup && <p className="mt-3 text-xs text-muted-foreground">Discovery group: <span className="font-mono">{discoveryGroup}</span>. Both devices must show the same group to appear here.</p>}
           {!peers.length && <div className="my-8 rounded-xl bg-secondary p-6 text-center text-sm text-muted-foreground">Waiting for another device…<span className="mt-2 block">Open automatic discovery on both devices. Devices with a shared public IPv4 address or IPv6 subnet appear together. VPNs, privacy services, or a mix of IPv4 and IPv6 can still separate devices.</span><span className="mt-2 block">Use four-digit pairing to connect across these groups, or join the same private room on both devices.</span><button type="button" className={`${button} mt-4`} onClick={onPairWithCode}>Use four-digit pairing</button></div>}
           <ul className="mt-5 space-y-3">{peers.map(peer => <li key={peer.id} className="flex items-center justify-between gap-3 rounded-xl border p-4"><div className="min-w-0"><p className="truncate font-medium">{peer.name}</p><p className="text-xs text-muted-foreground">Device {peer.id.slice(0, 8)}</p></div><button className={button} disabled={!online || busy || !files.length} onClick={() => void actions.current?.send(peer, files)}>Send</button></li>)}</ul>

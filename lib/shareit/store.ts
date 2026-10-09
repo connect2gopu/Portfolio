@@ -1,3 +1,5 @@
+import { SHAREIT_PAUSED, SHAREIT_PAUSE_MESSAGE } from "./availability";
+
 // Redis REST keeps signaling shared between serverless instances. The memory
 // fallback is deliberately restricted to a single local development process.
 type Entry = { value: unknown; expires: number };
@@ -5,6 +7,7 @@ const globalStore = globalThis as typeof globalThis & { shareitStore?: Map<strin
 const memory = globalStore.shareitStore ??= new Map<string, Entry>();
 
 export async function command(args: (string | number)[]): Promise<any> {
+  if (SHAREIT_PAUSED) throw new Error(SHAREIT_PAUSE_MESSAGE);
   // Use complete pairs so tokens from different databases are never mixed.
   const standardUrl = process.env.UPSTASH_REDIS_REST_URL?.trim();
   const standardToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
