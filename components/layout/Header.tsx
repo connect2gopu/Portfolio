@@ -92,6 +92,9 @@ export function Header() {
           <Link href="/tools/shareit" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium hover:text-primary transition-colors py-2">
             ShareIt
           </Link>
+          <Link href="/tools/treevault" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium hover:text-primary transition-colors py-2">
+            TreeVault
+          </Link>
         </nav>
       </div>
     </header>
