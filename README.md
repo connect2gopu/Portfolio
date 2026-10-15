@@ -18,9 +18,9 @@ A modern portfolio website with integrated blog functionality built with Next.js
 
 Open `/tools/shareit` on two devices connected to the same Wi-Fi. **Automatic discovery** is the default: nearby devices appear automatically, and you can select files and send them to another device. If a device does not appear, join the same private room on both devices. Four-digit pairing is hidden from the page but remains accessible at `/tools/shareit?mode=code`.
 
-Pairing and automatic discovery use **Upstash Redis** on Vercel. Redis stores temporary device presence and connection details; file bytes travel through an encrypted direct WebRTC data channel and are never uploaded to Redis or the site's server. There is no return QR/code exchange in this setup.
+Pairing and automatic discovery use **Upstash Redis** on Vercel. Redis stores temporary device presence and connection details; file bytes travel through an encrypted WebRTC data channel (direct by default, with an optional TURN fallback for automatic discovery) and are never uploaded to Redis or the site's server. There is no return QR/code exchange in this setup.
 
-Keep both pages open. Up to 100 files and 200 MB combined are supported per transfer. Received files are held in browser memory, so save them before refreshing or closing the page. Both pairing modes use STUN to discover reachable addresses without relaying file contents. Google's public STUN service is the default; optionally set `NEXT_PUBLIC_SHAREIT_STUN_URLS` to comma-separated STUN URLs, or an empty value for LAN-only candidates. Public environment variables are included at build time, so rebuild/redeploy after changing them. Guest Wi-Fi/client isolation and firewalls can still prevent direct connections; TURN relaying is not enabled.
+Keep both pages open. Up to 100 files and 200 MB combined are supported per transfer. Received files are held in browser memory, so save them before refreshing or closing the page. Both pairing modes use STUN to discover reachable addresses without relaying file contents. Google's public STUN service is the default; optionally set `NEXT_PUBLIC_SHAREIT_STUN_URLS` to comma-separated STUN URLs, or an empty value for LAN-only candidates. Public environment variables are included at build time, so rebuild/redeploy after changing them. Guest Wi-Fi/client isolation and firewalls can still prevent direct connections; TURN relaying is disabled unless explicitly configured below.
 
 For local Wi-Fi access, run `npm run dev:lan` (or `npm run dev:lan -- --port 3100`). The server listens on all interfaces over HTTP without Tina CMS. When Redis credentials are unset, local development uses an in-memory store in one server process. Automatic-discovery invite links use the server's private IPv4 address and current port; choose the Wi-Fi address if multiple adapters are listed. HTTP LAN pages support file transfers. For optional HTTPS, use `npm run dev:lan:https` with a certificate covering the LAN IP and trusted on both devices. Allow the port through the computer's firewall.
 
@@ -31,7 +31,16 @@ UPSTASH_REDIS_REST_URL=https://your-redis-rest-endpoint
 UPSTASH_REDIS_REST_TOKEN=your-server-only-token
 ```
 
-Create an Upstash Redis database and open its **Connect → REST** section. Copy the HTTPS REST URL and **read/write** token from the same database. In Vercel, open the project's **Settings → Environment Variables**, add the pair above for **Production** (and **Preview** if needed), then redeploy. No additional ShareIt variables, client SDK, or database schema are required. Never prefix these credentials with `NEXT_PUBLIC_`.
+Create an Upstash Redis database and open its **Connect → REST** section. Copy the HTTPS REST URL and **read/write** token from the same database. In Vercel, open the project's **Settings → Environment Variables**, add the pair above for **Production** (and **Preview** if needed), then redeploy. These variables enable discovery and signaling; no client SDK or database schema is required. Never prefix these credentials with `NEXT_PUBLIC_`.
+
+For automatic transfers that fail after acceptance even on the same Wi-Fi, configure a TURN REST-compatible relay (such as coturn with `use-auth-secret` and a matching `static-auth-secret`). STUN alone cannot bypass restrictive NATs or firewalls. Add the relay’s real URLs and shared secret to Vercel, then redeploy:
+
+```env
+SHAREIT_TURN_URLS=turn:turn.example.com:3478,turns:turn.example.com:443?transport=tcp
+SHAREIT_TURN_SECRET=your-turn-service-shared-secret
+```
+
+These are placeholders, not a hosted relay. The TURN service must actually listen on the listed ports and have a valid certificate for TLS. Keep the secret server-only; validated discovery sessions receive credentials that expire after one hour. Automatic discovery refreshes them with its heartbeat. WebRTC can choose a relay when direct routes fail; relayed file data remains encrypted between browsers. Redis and the site server still receive no file contents. Four-digit/manual pairing currently uses STUN only.
 
 The older `SHAREIT_REDIS_REST_URL` / `SHAREIT_REDIS_REST_TOKEN` pair remains supported. The standard Upstash pair takes precedence; never mix values from different databases. Missing production credentials, incomplete pairs, non-HTTPS REST endpoints, and authentication failures produce actionable errors. Presence and signaling data expire automatically. In production the store must be shared across serverless instances; it intentionally does not fall back to memory. For self-hosted production, `SHAREIT_ALLOW_LAN_LINKS=true` enables LAN-address suggestions; it is disabled by default and always disabled on Vercel.
 

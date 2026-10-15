@@ -47,6 +47,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
   const [downloads, setDownloads] = useState<Download[]>([]);
+  const [relayAvailable, setRelayAvailable] = useState(false);
   const urls = useRef<string[]>([]);
   const actions = useRef<{ send: (peer: Peer, files: File[]) => Promise<void>; accept: () => Promise<void>; cancel: () => void; refresh: () => void } | null>(null);
 
@@ -93,6 +94,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
     let disposed = false;
     let joined = false;
     let pc: RTCPeerConnection | null = null;
+    let turnServers: RTCIceServer[] = [];
     let channel: RTCDataChannel | null = null;
     let remote: string | null = null;
     let pending: Incoming | null = null;
@@ -138,9 +140,12 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
       reset("Ready to share");
       if (!disposed) setError(cause instanceof Error ? cause.message : "Transfer failed.");
     };
+    const connectionFailure = () => new Error(turnServers.length
+      ? "Could not establish a file connection, including through the configured relay. Try another network or check the TURN service configuration."
+      : "Could not establish a direct file connection. Same-Wi-Fi devices can still be blocked by router or browser network restrictions. Try a different Wi-Fi or hotspot; this site needs a TURN relay configured to provide a fallback.");
     const armTimeout = () => {
       lastActivity = Date.now();
-      timeout = setTimeout(() => fail(new Error("Connection timed out. Keep both devices on the same Wi-Fi and check that the router allows devices to communicate.")), 60000);
+      timeout = setTimeout(() => fail(connectionFailure()), 60000);
     };
     const attach = (dc: RTCDataChannel) => {
       channel = dc;
@@ -206,7 +211,8 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
       };
     };
     const createConnection = (to: string) => {
-      const connection = new RTCPeerConnection(shareItRtcConfiguration());
+      const configuration = shareItRtcConfiguration();
+      const connection = new RTCPeerConnection({ ...configuration, iceServers: [...(configuration.iceServers ?? []), ...turnServers] });
       pc = connection;
       connection.onicecandidate = event => {
         if (!event.candidate || pc !== connection) return;
@@ -215,7 +221,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
         if (!descriptionSent) localCandidates.push(candidate);
         else void signal(to, { type: "candidate", candidate }).catch(fail);
       };
-      connection.onconnectionstatechange = () => { if (pc === connection && connection.connectionState === "failed") fail(new Error("Could not connect directly. Check Wi-Fi client isolation or try another browser.")); };
+      connection.onconnectionstatechange = () => { if (pc === connection && connection.connectionState === "failed") fail(connectionFailure()); };
       connection.ondatachannel = event => attach(event.channel);
       return connection;
     };
@@ -253,7 +259,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
         else candidates.push(payload.candidate);
       } else if (payload.type === "answer" && payload.description && outgoing.length) {
         await pc.setRemoteDescription(payload.description); await flushCandidates(pc);
-        setStatus("Connecting directly…");
+        setStatus(turnServers.length ? "Connecting…" : "Connecting directly…");
       } else if (payload.type === "reject" || payload.type === "cancel") reset(payload.type === "reject" ? "Receiver declined or is busy" : "Transfer cancelled by the other device");
     };
     actions.current = {
@@ -276,7 +282,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
         const connection = pc;
         const to = remote;
         try {
-          setIncoming(null); pending = null; setStatus("Connecting directly…");
+          setIncoming(null); pending = null; setStatus(turnServers.length ? "Connecting…" : "Connecting directly…");
           await connection.setLocalDescription(await connection.createAnswer());
           if (pc !== connection) return;
           await publishDescription(connection, to, { type: "answer", description: connection.localDescription!.toJSON() });
@@ -301,6 +307,10 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
         const data = await api(joined ? "poll" : "join", { heartbeat });
         if (heartbeat) { lastHeartbeat = Date.now(); heartbeatName = nameRef.current; }
         if (disposed) { await api("leave").catch(() => {}); return; }
+        if (Array.isArray(data.turnServers)) {
+          turnServers = data.turnServers;
+          setRelayAvailable(turnServers.length > 0);
+        }
         if (!joined) setError("");
         joined = true; setOnline(true); setPeers(data.peers);
         if (!remote) setStatus(previous => previous === "Joining discovery…" ? "Ready to share" : previous);
@@ -313,7 +323,7 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
       } finally {
         polling = false;
         // Idle receivers must keep checking for offers and refreshing presence.
-        if (!disposed) timer = setTimeout(poll, 5000);
+        if (!disposed) timer = setTimeout(poll, remote ? 1000 : 5000);
       }
     };
     void poll();
@@ -388,8 +398,8 @@ function AutomaticShareIt({ initialRoom = "" }: { initialRoom?: string }) {
       </div>
       {incoming && <section role="dialog" aria-modal="false" aria-labelledby="incoming-title" className="mt-6 rounded-2xl border border-primary bg-primary/5 p-6"><h2 id="incoming-title" className="text-lg font-semibold">{peers.find(peer => peer.id === incoming.from)?.name || "Another device"} wants to send files</h2><ul className="my-4 max-h-40 overflow-auto text-sm">{incoming.files.map((file, i) => <li key={i}>{file.name} · {size(file.size)}</li>)}</ul><div className="flex gap-3"><button className={button} onClick={() => void actions.current?.accept()}>Accept files</button><button className={secondary} onClick={() => actions.current?.cancel()}>Decline</button></div></section>}
       {!!downloads.length && <section className="mt-6 rounded-2xl border bg-card p-6"><h2 className="text-lg font-semibold">Received files</h2><p className="mt-2 text-sm text-muted-foreground">Save these files before leaving or refreshing this page.</p><ul className="mt-4 space-y-3">{downloads.map((file, i) => <li key={file.url} className="flex items-center justify-between gap-4"><span className="min-w-0 truncate text-sm">{file.name} <span className="text-muted-foreground">· {size(file.size)}</span></span><a className={secondary} href={file.url} download={file.name}>Save file {i + 1}</a></li>)}</ul></section>}
-      <details className="mt-6 rounded-2xl border p-6"><summary className="cursor-pointer font-medium">Can’t see your other device? Use a private room</summary><p className="my-4 text-sm text-muted-foreground">Automatic discovery groups visitors by their shared public IPv4 address or IPv6 subnet. VPNs, privacy services, and mixed IPv4/IPv6 connections can still separate devices. Enter the same private room code on both devices. A room helps you find each other; a direct network connection is still required.</p><form onSubmit={event => { event.preventDefault(); setRoom(roomInput.trim().toLowerCase()); setGeneration(value => value + 1); }} className="flex flex-wrap gap-3"><input aria-label="Private room code" value={roomInput} onChange={event => setRoomInput(event.target.value)} pattern="[a-zA-Z0-9\-]{8,64}" minLength={8} maxLength={64} placeholder="e.g. a random private code" disabled={busy} className="min-w-0 flex-1 rounded-xl border bg-background px-4 py-3" /><button className={button} disabled={busy}>Join room</button><button className={secondary} type="button" disabled={busy} onClick={createRoom}>Create room</button><button className={secondary} type="button" disabled={busy} onClick={() => { setRoomInput(""); setRoom(""); setGeneration(value => value + 1); }}>Automatic discovery</button></form></details>
-      <p className="mt-6 text-sm text-muted-foreground">Files travel through an encrypted direct connection and are never uploaded to this site’s server. Discovery requires access to the site. Guest Wi-Fi or router isolation may block transfers. Only accept files from a device you recognize.</p>
+      <details className="mt-6 rounded-2xl border p-6"><summary className="cursor-pointer font-medium">Can’t see your other device? Use a private room</summary><p className="my-4 text-sm text-muted-foreground">Automatic discovery groups visitors by their shared public IPv4 address or IPv6 subnet. VPNs, privacy services, and mixed IPv4/IPv6 connections can still separate devices. Enter the same private room code on both devices. A room helps you find each other; it does not bypass network restrictions.</p><form onSubmit={event => { event.preventDefault(); setRoom(roomInput.trim().toLowerCase()); setGeneration(value => value + 1); }} className="flex flex-wrap gap-3"><input aria-label="Private room code" value={roomInput} onChange={event => setRoomInput(event.target.value)} pattern="[a-zA-Z0-9\-]{8,64}" minLength={8} maxLength={64} placeholder="e.g. a random private code" disabled={busy} className="min-w-0 flex-1 rounded-xl border bg-background px-4 py-3" /><button className={button} disabled={busy}>Join room</button><button className={secondary} type="button" disabled={busy} onClick={createRoom}>Create room</button><button className={secondary} type="button" disabled={busy} onClick={() => { setRoomInput(""); setRoom(""); setGeneration(value => value + 1); }}>Automatic discovery</button></form></details>
+      <p className="mt-6 text-sm text-muted-foreground">{relayAvailable ? "Files use an encrypted WebRTC connection. A TURN relay may forward encrypted data when a direct connection is unavailable." : "Files travel through an encrypted direct connection. Guest Wi-Fi or router isolation may block transfers."} Files are never uploaded to this site’s server. Discovery requires access to the site. Only accept files from a device you recognize.</p>
     </div>
   );
 }

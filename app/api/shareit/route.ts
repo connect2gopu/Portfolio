@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { command } from "@/lib/shareit/store";
 import { discoveryNetwork, shareItClientAddress } from "@/lib/shareit/network";
+import { shareItTurnServers } from "@/lib/shareit/turn-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
     if (!["join", "poll"].includes(body.action)) return NextResponse.json({ error: "Invalid action." }, { status: 400 });
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "Device";
     const heartbeat = body.action === "join" || body.heartbeat === true;
+    const turnServers = heartbeat ? shareItTurnServers(body.id) : undefined;
     if (heartbeat) {
       await command(["EXPIRE", key, 600]);
       await command(["HSET", peersKey, body.id, JSON.stringify({ id: body.id, name: name || "Device", seen: Date.now() })]);
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
       else if (peer.id !== body.id) peers.push({ id: peer.id, name: peer.name });
     }
     const messages: string[] = await command(["LPOP", queueKey, 50]) ?? [];
-    return NextResponse.json({ peers, messages: messages.map(value => JSON.parse(value)) }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ peers, messages: messages.map(value => JSON.parse(value)), turnServers }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof SyntaxError ? "Invalid request." : error instanceof Error ? error.message : "Discovery unavailable." }, { status: error instanceof SyntaxError ? 400 : 503 });
   }

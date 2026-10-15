@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import ts from 'typescript';
 
-test('an idle receiver polls for offers, shows approval, and stops on unmount', async () => {
+for (const relay of [false, true]) test(`receiver accepts with ${relay ? 'TURN fallback' : 'direct STUN'}, publishes answer before candidates, and stops on unmount`, async () => {
   const effects = [];
   const states = [];
   const timers = new Map();
@@ -32,7 +32,11 @@ test('an idle receiver polls for offers, shows approval, and stops on unmount', 
     '@/lib/shareit/rtc-config': { shareItRtcConfiguration: () => ({ iceServers: [{ urls: ['stun:example.com'] }] }) },
   };
   class Connection {
-    constructor(config) { assert.equal(config.iceServers[0].urls[0], 'stun:example.com'); }
+    constructor(config) {
+      assert.equal(config.iceServers[0].urls[0], 'stun:example.com');
+      assert.equal(config.iceServers.length, relay ? 2 : 1);
+      if (relay) assert.equal(config.iceServers[1].urls[0], 'turn:relay.example');
+    }
     async setRemoteDescription(value) { this.remoteDescription = value; remoteDescriptions.push(value); }
     async createAnswer() { return { type: 'answer', sdp: 'test answer' }; }
     async setLocalDescription(value) {
@@ -47,7 +51,7 @@ test('an idle receiver polls for offers, shows approval, and stops on unmount', 
     requests.push(request);
     const messages = incoming;
     incoming = [];
-    return { ok: true, json: async () => ({ peers: [{ id: 'sender', name: 'Sender' }], messages }) };
+    return { ok: true, json: async () => ({ peers: [{ id: 'sender', name: 'Sender' }], messages, turnServers: relay ? [{ urls: ['turn:relay.example'], username: 'temporary', credential: 'temporary' }] : [] }) };
   };
   new Function('require', 'module', 'exports', 'window', 'navigator', 'fetch', 'setTimeout', 'clearTimeout', 'RTCPeerConnection', source)(
     name => { assert.ok(name in mocks, `Unexpected import: ${name}`); return mocks[name]; },
