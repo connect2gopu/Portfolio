@@ -17,6 +17,10 @@ const nextConfig = {
   // For Vercel deployment
   poweredByHeader: false,
   compress: true,
+  // Privacy policy of the Tel Baati app. Google Play and the app link to the address without .html.
+  async rewrites() {
+    return [{ source: '/tel-baati/privacy', destination: '/tel-baati/privacy.html' }]
+  },
 }
 
 module.exports = nextConfig
